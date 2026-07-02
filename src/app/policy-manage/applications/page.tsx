@@ -143,7 +143,13 @@ export default function InsuranceApplicationPage() {
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   // ===== 渲染表格单元格 =====
-  function renderCell(app: InsuranceApplication, colKey: string) {
+  function renderCell(app: InsuranceApplication, colKey: string, rowIndex?: number) {
+    // 序号列：显示分页后的 1-based 序号
+    if (colKey === 'id') {
+      const seq = (rowIndex ?? 0) + 1 + (page - 1) * pageSize;
+      return <span className="text-sm text-center w-full inline-block">{seq}</span>;
+    }
+
     // 获取 JSON 段落内的字段值
     const val = getFieldString(app, colKey);
     const appAny = app as unknown as Record<string, unknown>;
@@ -369,11 +375,11 @@ export default function InsuranceApplicationPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginated.map((app) => (
+                {paginated.map((app, idx) => (
                   <TableRow key={app.id} className={!app.isLatest ? 'opacity-50' : ''}>
                     {visibleColumns.map((c) => (
                       <TableCell key={c.key} style={{ textAlign: allColumns.find((x) => x.key === c.key)?.align || 'left' }}>
-                        {renderCell(app, c.key)}
+                        {renderCell(app, c.key, idx)}
                       </TableCell>
                     ))}
                     <TableCell className="sticky right-0 z-10 bg-[var(--bg-surface)] shadow-[-4px_0_8px_rgba(0,0,0,0.06)]">

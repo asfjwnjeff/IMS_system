@@ -129,6 +129,33 @@ function seedApplications(db: { run: (s: string) => void }) {
       ai({insuranceCompany:'中国人保',policyNo:'PYDL202631010000002682',insurancePolicyStatus:'已承保',actualPremium:9268.3,policyFiles:[]}),
       ai({insuranceCorrectionStatus:'',correctionCompanyNo:'',correctionActualPremium:0,correctionFiles:[]}),
       '2026-06-26T11:38:33.000Z','2026-06-26T11:38:33.000Z'],
+    // 待发起 — 可编辑、可删除
+    ['app-3','PVG-AI26070001','非保入库','上海泓明国际货运有限公司','北京亦盛精密半导体有限公司','北京亦盛精密半导体有限公司','待发起','新增投保单',1,1,'','','','TB202607010001','2026-07-01 14:30:00','谭泽宇','','未生效','未回填','fms',
+      ai({applicantCreditCode:'91110108MA7D1E2F3G',applicantContactName:'张伟',applicantContactPhone:'010-62345678',applicantContactAddress:'北京市海淀区中关村南大街5号',customerCreditCode:'91110108MA7D1E2F3G',insuredCreditCode:'91110108MA7D1E2F3G',insuredContactName:'李强',insuredContactPhone:'010-82345678',insuredAddressCountryCode:'国内(Domestic)',insuredAddressCountry:'中国',insuredAddressProvince:'北京市',insuredAddressCity:'北京市',insuredAddressDistrict:'海淀区',insuredAddress:'北京市海淀区学院路30号',applicantCompany:'上海泓明国际货运有限公司',customerName:'北京亦盛精密半导体有限公司',insuredCompany:'北京亦盛精密半导体有限公司'}),
+      ai({transitPort:'',carriageType:'普通集装箱',insuranceProductType:'国内运输险',transportMode:'公路运输',invoiceNo:'INV-2026-0701-001',billNo:'BL20260701001',vesselName:'京A·12345',transferPlateNo:'',isContainer:'否',specialTransportRequirement:'无',departureTime:'2026-07-02',originCountryCode:'国内(Domestic)',originCountry:'中国',originProvince:'上海市',originCity:'上海市',originDistrict:'浦东新区',originAddress:'上海市浦东新区外高桥保税区',destCountryCode:'国内(Domestic)',destCountry:'中国',destProvince:'北京市',destCity:'北京市',destDistrict:'海淀区',destAddress:'北京市海淀区中关村'}),
+      ai({packageType:'纸制或纤维板制盒/箱',goodsNameCN:'晶圆测试设备',goodsModel:'WT-3000',goodsNature:'新货',goodsQuantity:50,quantity:5,shippingMark:'BJYS-001'}),
+      ai({invoiceAmount:850000,currencyName:'人民币',markupRatio:'发票金额原值110%',estimatedInsuranceAmount:935000,estimatedPremium:2340,compensationCountryCode:'国内(Domestic)',compensationCountry:'中国',compensationProvince:'北京市',compensationCity:'北京市',compensationDistrict:'海淀区',compensationAddress:'北京市海淀区学院路30号',remark:'精密设备运输，需防震',insuranceFiles:[]}),
+      ai({insuranceCompany:'',policyNo:'',insurancePolicyStatus:'',actualPremium:0,policyFiles:[]}),
+      ai({insuranceCorrectionStatus:'',correctionCompanyNo:'',correctionActualPremium:0,correctionFiles:[]}),
+      '2026-07-01T14:30:00.000Z','2026-07-01T14:30:00.000Z'],
+    // 审批拒绝 — 可重新编辑
+    ['app-5','PVG-AI26070002','保税返库','上海泓明供应链有限公司','合肥精智达半导体技术有限公司','合肥精智达半导体技术有限公司','审批拒绝','新增投保单',1,1,'','','材料不全，缺少运输许可证明','TB202607010002','2026-07-01 10:00:00','费斌','订单处理中','未生效','未回填','cos',
+      ai({applicantCreditCode:'91310115MA1H8D9E0F',applicantContactName:'费斌',applicantContactPhone:'021-50497890',applicantContactAddress:'上海市浦东新区外高桥保税区富特西一路289号',customerCreditCode:'91340100MA5K8L9M0N',insuredCreditCode:'91340100MA5K8L9M0N',insuredContactName:'陈伟',insuredContactPhone:'0551-62345678',insuredAddressCountryCode:'国内(Domestic)',insuredAddressCountry:'中国',insuredAddressProvince:'安徽省',insuredAddressCity:'合肥市',insuredAddressDistrict:'蜀山区',insuredAddress:'合肥市蜀山区高新区望江西路800号',applicantCompany:'上海泓明供应链有限公司',customerName:'合肥精智达半导体技术有限公司',insuredCompany:'合肥精智达半导体技术有限公司'}),
+      ai({transitPort:'上海浦东国际机场（中国）',carriageType:'其他',insuranceProductType:'进口运输险',transportMode:'航空运输',invoiceNo:'INV-2026-0701-002',billNo:'99993756980',vesselName:'MU5888',transferPlateNo:'',isContainer:'是',specialTransportRequirement:'无',departureTime:'2026-07-05',originCountryCode:'国际(International)',originCountry:'日本',originProvince:'东京都',originCity:'东京',originDistrict:'',originAddress:'TOKYO, JAPAN',destCountryCode:'国内(Domestic)',destCountry:'中国',destProvince:'上海市',destCity:'上海市',destDistrict:'浦东新区',destAddress:'上海浦东国际机场'}),
+      ai({packageType:'天然木托',goodsNameCN:'半导体测试探针卡',goodsModel:'PC-8000',goodsNature:'新货',goodsQuantity:200,quantity:2,shippingMark:'HFJZDA-JP'}),
+      ai({invoiceAmount:4200000,currencyName:'日元',markupRatio:'发票金额原值110%',estimatedInsuranceAmount:4620000,estimatedPremium:138.6,compensationCountryCode:'国内(Domestic)',compensationCountry:'中国',compensationProvince:'安徽省',compensationCity:'合肥市',compensationDistrict:'蜀山区',compensationAddress:'合肥市蜀山区高新区望江西路800号',remark:'',insuranceFiles:[]}),
+      ai({insuranceCompany:'',policyNo:'',insurancePolicyStatus:'',actualPremium:0,policyFiles:[]}),
+      ai({insuranceCorrectionStatus:'',correctionCompanyNo:'',correctionActualPremium:0,correctionFiles:[]}),
+      '2026-07-01T10:00:00.000Z','2026-07-01T10:00:00.000Z'],
+    // 审批中 — 可撤销审核
+    ['app-6','PVG-AI26070003','进境申报入库','上海泓明国际货运有限公司','长江存储科技有限责任公司','长江存储科技有限责任公司','审批中','新增投保单',1,1,'','','','TB202607010003','2026-07-01 16:00:00','谭泽宇','','','','fms',
+      ai({applicantCreditCode:'91310115MA1H2B3C4D',applicantContactName:'谭泽宇',applicantContactPhone:'021-58345678',applicantContactAddress:'上海市浦东新区张江高科技园区碧波路690号',customerCreditCode:'91420100MA4K4T5U6V',insuredCreditCode:'91420100MA4K4T5U6V',insuredContactName:'赵刚',insuredContactPhone:'027-87654321',insuredAddressCountryCode:'国内(Domestic)',insuredAddressCountry:'中国',insuredAddressProvince:'湖北省',insuredAddressCity:'武汉市',insuredAddressDistrict:'洪山区',insuredAddress:'武汉市洪山区光谷大道77号',applicantCompany:'上海泓明国际货运有限公司',customerName:'长江存储科技有限责任公司',insuredCompany:'长江存储科技有限责任公司'}),
+      ai({transitPort:'',carriageType:'普通集装箱',insuranceProductType:'国内运输险',transportMode:'铁路运输',invoiceNo:'INV-2026-0701-003',billNo:'BL20260701003',vesselName:'',transferPlateNo:'',isContainer:'是',specialTransportRequirement:'温控运输(15-25°C)',departureTime:'2026-07-03',originCountryCode:'国内(Domestic)',originCountry:'中国',originProvince:'上海市',originCity:'上海市',originDistrict:'浦东新区',originAddress:'上海市浦东新区张江高科技园区',destCountryCode:'国内(Domestic)',destCountry:'中国',destProvince:'湖北省',destCity:'武汉市',destDistrict:'洪山区',destAddress:'武汉市洪山区光谷大道77号'}),
+      ai({packageType:'普通集装箱',goodsNameCN:'NAND闪存芯片',goodsModel:'YMTC-232L',goodsNature:'新货',goodsQuantity:10000,quantity:20,shippingMark:'YMTC-WH'}),
+      ai({invoiceAmount:5600000,currencyName:'人民币',markupRatio:'发票金额原值110%',estimatedInsuranceAmount:6160000,estimatedPremium:15400,compensationCountryCode:'国内(Domestic)',compensationCountry:'中国',compensationProvince:'湖北省',compensationCity:'武汉市',compensationDistrict:'洪山区',compensationAddress:'武汉市洪山区光谷大道77号',remark:'高价值芯片，全程温控',insuranceFiles:[]}),
+      ai({insuranceCompany:'',policyNo:'',insurancePolicyStatus:'',actualPremium:0,policyFiles:[]}),
+      ai({insuranceCorrectionStatus:'',correctionCompanyNo:'',correctionActualPremium:0,correctionFiles:[]}),
+      '2026-07-01T16:00:00.000Z','2026-07-01T16:00:00.000Z'],
   ];
 
   for (const r of rows) {
