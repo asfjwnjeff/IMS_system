@@ -1,3 +1,32 @@
+// ========== 辅助类型 ==========
+
+/** 历史版本快照（审批通过时自动保存） */
+export interface HistoryVersion {
+  version: number;
+  timestamp: string;
+  label: string;
+  data: Partial<import('./index').InsuranceApplication>;
+}
+
+/** 审批历史记录 */
+export interface ApprovalHistoryEntry {
+  id: number;
+  timestamp: string;
+  approver: string;
+  action: string;
+  comment: string;
+}
+
+/** 修改日志 */
+export interface ChangeLogEntry {
+  id: number;
+  timestamp: string;
+  user: string;
+  fieldLabel: string;
+  oldValue: string;
+  newValue: string;
+}
+
 // ========== 基础信息 ==========
 
 /** 保费汇率配置 */

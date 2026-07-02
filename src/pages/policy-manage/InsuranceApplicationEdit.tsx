@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Form, Input, Select, DatePicker, InputNumber, Upload, Button, Space, message, Row, Col, Tabs, Table, Tag, Timeline, Descriptions, Empty } from 'antd';
+import { Card, Form, Input, Select, DatePicker, InputNumber, Upload, Button, Space, message, Row, Col } from 'antd';
 import { UploadOutlined, SwapOutlined } from '@ant-design/icons';
 import { mockApplications, mockHistoryVersions, mockApprovalHistory, mockChangeLogs } from '../../mock/data';
 import { sections } from './fields';
-import type { HistoryVersion, ChangeLogEntry } from '../../mock/data';
+import type { HistoryVersion } from '../../types';
+import SectionHead from '../../components/SectionHead';
+import HistoryPanel from '../../components/HistoryPanel';
 
 const { TextArea } = Input;
 
@@ -34,18 +36,24 @@ const editSections = sections.filter((s) => s.title !== '保单回填信息' && 
 const fieldLabelMap: Record<string, string> = {};
 sections.forEach((s) => s.fields.forEach((f) => { fieldLabelMap[f.key] = f.label; }));
 
-const SectionHead = ({ title }: { title: string }) => (
-  <div className="section-head">
-    <span className="section-head-line" />
-    <span className="section-head-title">{title}</span>
-  </div>
-);
+function DiffWrapper({ changed, oldValue, children, value, onChange }: { changed: boolean; oldValue: string; children: React.ReactNode; value?: unknown; onChange?: (...args: unknown[]) => void }) {
+  // Form.Item 通过 React.cloneElement 将 value/onChange 注入 DiffWrapper，
+  // DiffWrapper 必须将这些 props 转发给真正的表单控件。
+  // 当 !changed 时直接返回 children（不包 Fragment），让 cloneElement 穿透到控件。
+  if (!changed) {
+    if (React.isValidElement(children)) {
+      return React.cloneElement(children, { value, onChange } as Record<string, unknown>);
+    }
+    return children as React.ReactElement;
+  }
 
-function DiffWrapper({ changed, oldValue, children }: { changed: boolean; oldValue: string; children: React.ReactNode }) {
-  if (!changed) return <>{children}</>;
+  const child = React.isValidElement(children)
+    ? React.cloneElement(children, { value, onChange } as Record<string, unknown>)
+    : children;
+
   return (
     <div style={{ border: '2px solid #faad14', borderRadius: 6, background: '#fffbe6', overflow: 'hidden' }}>
-      {children}
+      {child}
       <div style={{ fontSize: 11, color: '#d48806', padding: '2px 8px 6px', lineHeight: 1.4 }}>
         📋 原值：{oldValue}
       </div>
@@ -62,7 +70,7 @@ export default function InsuranceApplicationEdit() {
 
   if (!record) return <Card title="编辑投保单"><p>未找到投保单记录</p></Card>;
 
-  // CRITICAL: 剔除版本管理字段，避免 Form initialValues 在 Ant Design 6.x 下崩溃
+  // 剔除版本管理字段，避免 Form initialValues 包含非表单字段
   const { isLatest: _lv, version: _ver, previousId: _pid, ...formInit } = record as unknown as Record<string, unknown>;
 
   const versions = mockHistoryVersions[record.id] || [];
@@ -104,50 +112,16 @@ export default function InsuranceApplicationEdit() {
     const oldValue = getOldValue(key);
     const wrap = (el: React.ReactNode) => <DiffWrapper changed={changed} oldValue={oldValue}>{el}</DiffWrapper>;
 
-    if (type === 'upload') return wrap(<Form.Item name={key} style={{ margin: 0 }} valuePropName="fileList"><Upload><Button icon={<UploadOutlined />}>选择附件</Button></Upload></Form.Item>);
+    if (type === 'upload') return wrap(<Upload><Button icon={<UploadOutlined />}>选择附件</Button></Upload>);
     if (type === 'select') {
       const opts = selectOptions[key];
-      return wrap(<Form.Item name={key} style={{ margin: 0 }}><Select placeholder="请选择">{opts ? opts.map((o) => <Select.Option key={o.value} value={o.value}>{o.label}</Select.Option>) : null}</Select></Form.Item>);
+      return wrap(<Select placeholder="请选择">{opts ? opts.map((o) => <Select.Option key={o.value} value={o.value}>{o.label}</Select.Option>) : null}</Select>);
     }
-    if (type === 'date') return wrap(<Form.Item name={key} style={{ margin: 0 }}><DatePicker style={{ width: '100%' }} /></Form.Item>);
-    if (type === 'number') return wrap(<Form.Item name={key} style={{ margin: 0 }}><InputNumber style={{ width: '100%' }} min={0} /></Form.Item>);
-    if (type === 'textarea') return wrap(<Form.Item name={key} style={{ margin: 0 }}><TextArea rows={2} /></Form.Item>);
-    return wrap(<Form.Item name={key} style={{ margin: 0 }}><Input /></Form.Item>);
+    if (type === 'date') return wrap(<DatePicker style={{ width: '100%' }} />);
+    if (type === 'number') return wrap(<InputNumber style={{ width: '100%' }} min={0} />);
+    if (type === 'textarea') return wrap(<TextArea rows={2} />);
+    return wrap(<Input />);
   };
-
-  const versionTab = versions.length === 0 ? <Empty description="暂无历史版本" /> : (
-    <Timeline items={versions.map((v) => ({
-      color: v.version === versions[0].version ? 'green' : 'blue',
-      children: (
-        <div key={v.version}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>V{v.version} — {v.label}</div>
-          <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 8 }}>{v.timestamp}</div>
-          <Descriptions size="small" bordered column={2}>
-            {Object.entries(v.data).filter(([, val]) => val !== undefined && val !== '').slice(0, 10).map(([k, val]) => (
-              <Descriptions.Item key={k} label={fieldLabelMap[k] || k}>{String(val)}</Descriptions.Item>
-            ))}
-          </Descriptions>
-          {Object.keys(v.data).length > 10 && <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>…共 {Object.keys(v.data).length} 个字段</div>}
-        </div>
-      ),
-    }))} />
-  );
-
-  const approvalTab = approvalHistory.length === 0 ? <Empty description="暂无审批记录" /> : (
-    <Timeline items={approvalHistory.map((a) => ({
-      color: a.action === '审批通过' ? 'green' : a.action === '审批拒绝' ? 'red' : 'blue',
-      children: (
-        <div key={a.id}>
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>
-            <Tag color={a.action === '审批通过' ? 'success' : a.action === '审批拒绝' ? 'error' : 'processing'}>{a.action}</Tag>
-            {a.approver}
-          </div>
-          <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>{a.timestamp}</div>
-          {a.comment && <div style={{ fontSize: 13, color: '#595959' }}>{a.comment}</div>}
-        </div>
-      ),
-    }))} />
-  );
 
   return (
     <Card
@@ -188,6 +162,7 @@ export default function InsuranceApplicationEdit() {
                         label={<span style={{ fontSize: 13, color: changed && showChanges ? '#d48806' : '#595959', fontWeight: changed && showChanges ? 600 : 400 }}>{changed && showChanges ? '● ' : ''}{field.label}</span>}
                         rules={[{ required: false }]}
                         style={{ marginBottom: 16 }}
+                        valuePropName={field.type === 'upload' ? 'fileList' : undefined}
                       >
                         {renderInput(field)}
                       </Form.Item>
@@ -208,21 +183,13 @@ export default function InsuranceApplicationEdit() {
       </Form>
 
       <Card title={<span style={{ fontSize: 15, fontWeight: 600 }}>历史记录</span>} style={{ marginTop: 24, borderTop: '2px solid #1677ff' }} styles={{ body: { paddingTop: 8 } }}>
-        <Tabs defaultActiveKey="logs" items={[
-          { key: 'versions', label: <span>历史版本{versions.length > 0 && <Tag style={{ marginLeft: 4 }}>{versions.length}</Tag>}</span>, children: versionTab },
-          { key: 'approvals', label: <span>审批历史{approvalHistory.length > 0 && <Tag style={{ marginLeft: 4 }}>{approvalHistory.length}</Tag>}</span>, children: approvalTab },
-          { key: 'logs', label: <span>修改日志{changeLogs.length > 0 && <Tag style={{ marginLeft: 4 }}>{changeLogs.length}</Tag>}</span>, children: (
-            <Table dataSource={changeLogs} rowKey="id" size="small" pagination={false}
-              locale={{ emptyText: <Empty description="暂无修改记录" /> }}
-              columns={[
-                { title: '时间', dataIndex: 'timestamp', key: 'timestamp', width: 160, render: (v: string) => <span style={{ fontSize: 12 }}>{v}</span> },
-                { title: '操作人', dataIndex: 'user', key: 'user', width: 80 },
-                { title: '字段', dataIndex: 'fieldLabel', key: 'fieldLabel', width: 140 },
-                { title: '变更', key: 'change', width: 280, render: (_: unknown, r: ChangeLogEntry) => <span style={{ fontSize: 12 }}><span style={{ color: '#ff4d4f', textDecoration: 'line-through' }}>{r.oldValue}</span><span style={{ margin: '0 6px', color: '#bfbfbf' }}>→</span><span style={{ color: '#52c41a', fontWeight: 500 }}>{r.newValue}</span></span> },
-              ]}
-            />
-          ) },
-        ]} />
+        <HistoryPanel
+          versions={versions}
+          approvalHistory={approvalHistory}
+          changeLogs={changeLogs}
+          fieldLabelMap={fieldLabelMap}
+          defaultActiveKey="logs"
+        />
       </Card>
     </Card>
   );

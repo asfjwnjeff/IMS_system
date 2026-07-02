@@ -1,0 +1,131 @@
+@startuml
+!include <archimate/Archimate>
+
+' ============================================================
+' CIM2.0 vs IMS 保险系统 — 架构分层对比
+' ============================================================
+
+title **CIM2.0 vs IMS 保险系统 — 架构分层对比**
+
+' ============================================================
+' CIM2.0 (左侧)
+' ============================================================
+
+rectangle "CIM2.0 — 全栈 B/S 架构（Next.js 16）" as cimCore #EFF6FF {
+
+  rectangle "🧑 用户界面层" as cimUI #DBEAFE {
+    Application_Interface(cimPage, "18 个页面路由\n服务器组件 + 客户端组件")
+    Application_Component(cimMobile, "移动端 H5\n/mobile 微应用")
+    Application_Service(cimSSR, "SSR 服务端渲染\n首屏零 JS")
+  }
+
+  rectangle "🎨 前端状态层" as cimFE #DBEAFE {
+    Application_Component(cimCtx, "React Context\nuseReducer 全局状态")
+    Application_Component(cimShadcn, "shadcn/ui\n56 个组件 (源码级)")
+    Application_DataObject(cimToken, "Tailwind CSS v4\n+ CSS 设计令牌")
+  }
+
+  rectangle "🔧 API 服务层" as cimAPI #BBDEFB {
+    Application_Service(cimApi, "28 个 RESTful API\n/api/customers...")
+    Application_Process(cimAuth, "内置权限校验\nRoute Handler 中间件")
+    Application_Interface(cimApiFormat, "统一响应信封\n{success, data, error, meta}")
+  }
+
+  rectangle "💾 数据层" as cimData #A7D1AB {
+    Application_Component(cimORM, "Drizzle ORM\n类型安全查询")
+    Technology_SystemSoftware(cimSQL, "sql.js (WASM)\nSQLite 内存引擎")
+    Technology_Artifact(cimDB, "data/cim.db\n每 5s 自动持久化")
+  }
+
+  rectangle "⚙️ 基础设施" as cimInfra #E5E7EB {
+    Technology_Node(cimServer, "Next.js Dev Server")
+    Technology_Process(cimMigrate, "autoMigrate()\nSchema 自动演进")
+    Technology_Artifact(cimE2E, "Playwright E2E\n28 个用例")
+  }
+}
+
+' ============================================================
+' IMS 保险系统 (右侧)
+' ============================================================
+
+rectangle "IMS 保险系统 — 纯前端 SPA（Vite + React 19）" as imsCore #FFF7ED {
+
+  rectangle "🧑 用户界面层" as imsUI #FFEDD5 {
+    Application_Interface(imsPage, "8 个页面路由\n纯客户端渲染 (CSR)")
+    Application_Component(imsLayout, "MainLayout\n深色侧栏 + 面包屑")
+  }
+
+  rectangle "🎨 前端状态层" as imsFE #FFEDD5 {
+    Application_Component(imsAntd, "Ant Design 6.5\n开箱即用组件")
+    Application_DataObject(imsCssVar, "Clean Blue 设计系统\nCSS 变量 + Token")
+    Application_Component(imsConfig, "usePersistedConfig\nlocalStorage 列配置")
+  }
+
+  rectangle "📦 Service 层" as imsAPI #FFCF87 {
+    Application_Process(imsApiFormat, "统一响应信封\n{success, data, error, meta}")
+    Application_Service(imsSvc, "applicationService\nCRUD + 搜索 + 分页")
+    Application_DataObject(imsMock, "Mock 数据层\n内存数组 (刷新丢失)")
+  }
+
+  rectangle "💾 存储层" as imsData #FED7AA {
+    Technology_Interface(imsLS, "localStorage\n仅 UI 配置持久化")
+  }
+
+  rectangle "⚙️ 构建工具" as imsInfra #E5E7EB {
+    Technology_Node(imsVite, "Vite 8.0\n极速 HMR")
+    Technology_Artifact(imsOXC, "oxlint\nRust 编写，毫秒级")
+    Technology_Artifact(imsE2E, "Playwright E2E\n测试用例")
+  }
+}
+
+' ============================================================
+' 数据流关系 — CIM2.0
+' ============================================================
+Rel_Flow(cimPage, cimCtx, "dispatch(action)")
+Rel_Flow(cimCtx, cimApi, "fetch('/api/...')")
+Rel_Flow(cimApi, cimORM, "Drizzle 查询")
+Rel_Flow(cimORM, cimSQL, "SQL 执行")
+Rel_Access_w(cimSQL, cimDB, "每 5s 持久化")
+
+' ============================================================
+' 数据流关系 — IMS
+' ============================================================
+Rel_Flow(imsPage, imsSvc, "await service()")
+Rel_Flow(imsSvc, imsMock, "数组 CRUD")
+Rel_Access_w(imsConfig, imsLS, "自动保存列配置")
+
+' ============================================================
+' 对比标注
+' ============================================================
+
+note top of cimAPI
+  <b>✅ 真正的后端能力</b>
+  • ORM 类型安全查询
+  • 数据持久化到磁盘
+  • Schema 自动演进
+  • 服务端校验 & 中间件
+end note
+
+note top of imsAPI
+  <b>⚠️ 前端模拟层</b>
+  • 无真实数据持久化
+  • 刷新即丢失业务数据
+  • 无 Schema 类型约束
+  • 无后端校验
+end note
+
+note right of cimDB
+  <b>双版本并行</b>
+  • main :5000 (客户版)
+  • feat/platform :5001 (平台版)
+  • git worktree 隔离
+end note
+
+note right of imsLS
+  <b>单版本应用</b>
+  • 端口 :5173
+  • 无持久化数据库
+  • 无多版本策略
+end note
+
+@enduml

@@ -1,0 +1,565 @@
+- generic [ref=f3e3]:
+  - complementary [ref=f3e4]:
+    - generic [ref=f3e5]:
+      - heading "IMS保险管理系统" [level=1] [ref=f3e7]
+      - menu [ref=f3e8]:
+        - menuitem "home 首页" [ref=f3e9] [cursor=pointer]:
+          - img "home" [ref=f3e10]:
+            - img [ref=f3e11]
+          - generic [ref=f3e13]: 首页
+        - menuitem "setting 系统管理" [ref=f3e14] [cursor=pointer]:
+          - img "setting" [ref=f3e15]:
+            - img [ref=f3e16]
+          - generic [ref=f3e18]: 系统管理
+        - menuitem "monitor 系统监控" [ref=f3e19] [cursor=pointer]:
+          - img "monitor" [ref=f3e20]:
+            - img [ref=f3e21]
+          - generic [ref=f3e23]: 系统监控
+        - menuitem "database 基础信息" [ref=f3e24] [cursor=pointer]:
+          - img "database" [ref=f3e25]:
+            - img [ref=f3e26]
+          - generic [ref=f3e28]: 基础信息
+        - menuitem "file-protect 保单管理" [expanded] [ref=f3e29] [cursor=pointer]:
+          - img "file-protect" [ref=f3e30]:
+            - img [ref=f3e31]
+          - generic [ref=f3e33]: 保单管理
+        - menu [ref=f3e34]:
+          - menuitem "投保申请表" [ref=f3e35] [cursor=pointer]:
+            - generic [ref=f3e36]: 投保申请表
+        - menuitem "alert 报案理赔" [ref=f3e37] [cursor=pointer]:
+          - img "alert" [ref=f3e38]:
+            - img [ref=f3e39]
+          - generic [ref=f3e41]: 报案理赔
+  - generic [ref=f3e42]:
+    - banner [ref=f3e43]:
+      - generic [ref=f3e44]:
+        - img "menu-fold" [ref=f3e45] [cursor=pointer]:
+          - img [ref=f3e46]
+        - navigation [ref=f3e48]:
+          - list [ref=f3e49]:
+            - listitem [ref=f3e50]:
+              - generic [ref=f3e52] [cursor=pointer]: 首页
+      - generic [ref=f3e53] [cursor=pointer]:
+        - img "user" [ref=f3e55]:
+          - img [ref=f3e56]
+        - generic [ref=f3e58]: 管理员
+    - main [ref=f3e59]:
+      - generic [ref=f3e60]:
+        - generic [ref=f3e62]:
+          - generic [ref=f3e64]: 编辑投保单 — PVG-AI26060171
+          - generic [ref=f3e66]:
+            - button "swap 显示变更 （15）" [ref=f3e68] [cursor=pointer]:
+              - img "swap" [ref=f3e70]:
+                - img [ref=f3e71]
+              - generic [ref=f3e73]: 显示变更
+              - generic [ref=f3e74]: （15）
+            - button "返 回" [ref=f3e76] [cursor=pointer]:
+              - generic [ref=f3e77]: 返 回
+        - generic [ref=f3e78]:
+          - generic [ref=f3e79]:
+            - generic [ref=f3e80]:
+              - generic [ref=f3e83]: 基本信息
+              - generic [ref=f3e86]:
+                - generic [ref=f3e89]:
+                  - generic [ref=f3e92]: 业务参考号
+                  - textbox [ref=f3e96]
+                - generic [ref=f3e99]:
+                  - generic [ref=f3e102]: 投保类别
+                  - generic [ref=f3e106] [cursor=pointer]:
+                    - generic [ref=f3e107]:
+                      - generic: 请选择
+                      - combobox [ref=f3e108]
+                    - img "down" [ref=f3e110]:
+                      - img [ref=f3e111]
+            - generic [ref=f3e113]:
+              - generic [ref=f3e116]: 投/被保险人信息
+              - generic [ref=f3e119]:
+                - generic [ref=f3e122]:
+                  - generic [ref=f3e125]: 投保人企业名称
+                  - textbox [ref=f3e129]
+                - generic [ref=f3e132]:
+                  - generic [ref=f3e135]: 投保人统一社会信用代码
+                  - textbox [ref=f3e139]
+                - generic [ref=f3e142]:
+                  - generic [ref=f3e145]: 投保人联系人姓名
+                  - textbox [ref=f3e149]
+                - generic [ref=f3e152]:
+                  - generic [ref=f3e155]: 投保人联系电话
+                  - textbox [ref=f3e159]
+                - generic [ref=f3e162]:
+                  - generic [ref=f3e165]: 投保人联系地址
+                  - textbox [ref=f3e169]
+                - generic [ref=f3e172]:
+                  - generic [ref=f3e175]: 客户名称
+                  - textbox [ref=f3e179]
+                - generic [ref=f3e182]:
+                  - generic [ref=f3e185]: 客户统一社会信用代码
+                  - textbox [ref=f3e189]
+                - generic [ref=f3e192]:
+                  - generic [ref=f3e195]: 被保人企业名称
+                  - textbox [ref=f3e199]
+                - generic [ref=f3e202]:
+                  - generic [ref=f3e205]: 被保人统一社会信用代码
+                  - textbox [ref=f3e209]
+                - generic [ref=f3e212]:
+                  - generic [ref=f3e215]: 被保人联系人姓名
+                  - textbox [ref=f3e219]
+                - generic [ref=f3e222]:
+                  - generic [ref=f3e225]: 被保人联系电话
+                  - textbox [ref=f3e229]
+                - generic [ref=f3e232]:
+                  - generic [ref=f3e235]: 被保人地址国家标识
+                  - generic [ref=f3e239] [cursor=pointer]:
+                    - generic [ref=f3e240]:
+                      - generic: 请选择
+                      - combobox [ref=f3e241]
+                    - img "down" [ref=f3e243]:
+                      - img [ref=f3e244]
+                - generic [ref=f3e248]:
+                  - generic [ref=f3e251]: 被保人地址国家
+                  - generic [ref=f3e255] [cursor=pointer]:
+                    - generic [ref=f3e256]:
+                      - generic: 请选择
+                      - combobox [ref=f3e257]
+                    - img "down" [ref=f3e259]:
+                      - img [ref=f3e260]
+                - generic [ref=f3e264]:
+                  - generic [ref=f3e267]: 被保人地址省
+                  - generic [ref=f3e271] [cursor=pointer]:
+                    - generic [ref=f3e272]:
+                      - generic: 请选择
+                      - combobox [ref=f3e273]
+                    - img "down" [ref=f3e275]:
+                      - img [ref=f3e276]
+                - generic [ref=f3e280]:
+                  - generic [ref=f3e283]: 被保人地址市
+                  - generic [ref=f3e287] [cursor=pointer]:
+                    - generic [ref=f3e288]:
+                      - generic: 请选择
+                      - combobox [ref=f3e289]
+                    - img "down" [ref=f3e291]:
+                      - img [ref=f3e292]
+                - generic [ref=f3e296]:
+                  - generic [ref=f3e299]: 被保人地址区
+                  - generic [ref=f3e303] [cursor=pointer]:
+                    - generic [ref=f3e304]:
+                      - generic: 请选择
+                      - combobox [ref=f3e305]
+                    - img "down" [ref=f3e307]:
+                      - img [ref=f3e308]
+                - generic [ref=f3e312]:
+                  - generic [ref=f3e315]: 被保人联系地址
+                  - textbox [ref=f3e319]
+            - generic [ref=f3e320]:
+              - generic [ref=f3e323]: 运输信息
+              - generic [ref=f3e326]:
+                - generic [ref=f3e329]:
+                  - generic [ref=f3e332]: 承保产品类型
+                  - generic [ref=f3e336] [cursor=pointer]:
+                    - generic [ref=f3e337]:
+                      - generic: 请选择
+                      - combobox [ref=f3e338]
+                    - img "down" [ref=f3e340]:
+                      - img [ref=f3e341]
+                - generic [ref=f3e345]:
+                  - generic [ref=f3e348]: 运输方式
+                  - generic [ref=f3e352] [cursor=pointer]:
+                    - generic [ref=f3e353]:
+                      - generic: 请选择
+                      - combobox [ref=f3e354]
+                    - img "down" [ref=f3e356]:
+                      - img [ref=f3e357]
+                - generic [ref=f3e361]:
+                  - generic [ref=f3e364]: 发票号
+                  - textbox [ref=f3e368]
+                - generic [ref=f3e371]:
+                  - generic [ref=f3e374]: 提运单号
+                  - textbox [ref=f3e378]
+                - generic [ref=f3e381]:
+                  - generic [ref=f3e384]: 船名/车号/航班
+                  - textbox [ref=f3e388]
+                - generic [ref=f3e391]:
+                  - generic [ref=f3e394]: 转运车牌号
+                  - textbox [ref=f3e398]
+                - generic [ref=f3e401]:
+                  - generic [ref=f3e404]: 是否集装箱
+                  - generic [ref=f3e408] [cursor=pointer]:
+                    - generic [ref=f3e409]:
+                      - generic: 请选择
+                      - combobox [ref=f3e410]
+                    - img "down" [ref=f3e412]:
+                      - img [ref=f3e413]
+                - generic [ref=f3e417]:
+                  - generic [ref=f3e420]: 车厢类型
+                  - generic [ref=f3e424] [cursor=pointer]:
+                    - generic [ref=f3e425]:
+                      - generic: 请选择
+                      - combobox [ref=f3e426]
+                    - img "down" [ref=f3e428]:
+                      - img [ref=f3e429]
+                - generic [ref=f3e433]:
+                  - generic [ref=f3e436]: 特殊运输要求类型
+                  - generic [ref=f3e440] [cursor=pointer]:
+                    - generic [ref=f3e441]:
+                      - generic: 请选择
+                      - combobox [ref=f3e442]
+                    - img "down" [ref=f3e444]:
+                      - img [ref=f3e445]
+                - generic [ref=f3e449]:
+                  - generic [ref=f3e452]: 途径港
+                  - generic [ref=f3e456] [cursor=pointer]:
+                    - generic [ref=f3e457]:
+                      - generic: 请选择
+                      - combobox [ref=f3e458]
+                    - img "down" [ref=f3e460]:
+                      - img [ref=f3e461]
+                - generic [ref=f3e465]:
+                  - generic [ref=f3e468]: 起运时间
+                  - generic [ref=f3e473]:
+                    - textbox "请选择日期" [ref=f3e474]
+                    - generic:
+                      - img:
+                        - img
+                - generic [ref=f3e477]:
+                  - generic [ref=f3e480]: 起运国家标识
+                  - generic [ref=f3e484] [cursor=pointer]:
+                    - generic [ref=f3e485]:
+                      - generic: 请选择
+                      - combobox [ref=f3e486]
+                    - img "down" [ref=f3e488]:
+                      - img [ref=f3e489]
+                - generic [ref=f3e493]:
+                  - generic [ref=f3e496]: 起运国家
+                  - generic [ref=f3e500] [cursor=pointer]:
+                    - generic [ref=f3e501]:
+                      - generic: 请选择
+                      - combobox [ref=f3e502]
+                    - img "down" [ref=f3e504]:
+                      - img [ref=f3e505]
+                - generic [ref=f3e509]:
+                  - generic [ref=f3e512]: 起运地地址省
+                  - generic [ref=f3e516] [cursor=pointer]:
+                    - generic [ref=f3e517]:
+                      - generic: 请选择
+                      - combobox [ref=f3e518]
+                    - img "down" [ref=f3e520]:
+                      - img [ref=f3e521]
+                - generic [ref=f3e525]:
+                  - generic [ref=f3e528]: 起运地地址市
+                  - generic [ref=f3e532] [cursor=pointer]:
+                    - generic [ref=f3e533]:
+                      - generic: 请选择
+                      - combobox [ref=f3e534]
+                    - img "down" [ref=f3e536]:
+                      - img [ref=f3e537]
+                - generic [ref=f3e541]:
+                  - generic [ref=f3e544]: 起运地地址区
+                  - generic [ref=f3e548] [cursor=pointer]:
+                    - generic [ref=f3e549]:
+                      - generic: 请选择
+                      - combobox [ref=f3e550]
+                    - img "down" [ref=f3e552]:
+                      - img [ref=f3e553]
+                - generic [ref=f3e557]:
+                  - generic [ref=f3e560]: 起运地地址
+                  - textbox [ref=f3e564]
+                - generic [ref=f3e567]:
+                  - generic [ref=f3e570]: 目的地国家标识
+                  - generic [ref=f3e574] [cursor=pointer]:
+                    - generic [ref=f3e575]:
+                      - generic: 请选择
+                      - combobox [ref=f3e576]
+                    - img "down" [ref=f3e578]:
+                      - img [ref=f3e579]
+                - generic [ref=f3e583]:
+                  - generic [ref=f3e586]: 目的地国家
+                  - generic [ref=f3e590] [cursor=pointer]:
+                    - generic [ref=f3e591]:
+                      - generic: 请选择
+                      - combobox [ref=f3e592]
+                    - img "down" [ref=f3e594]:
+                      - img [ref=f3e595]
+                - generic [ref=f3e599]:
+                  - generic [ref=f3e602]: 目的地地址省
+                  - generic [ref=f3e606] [cursor=pointer]:
+                    - generic [ref=f3e607]:
+                      - generic: 请选择
+                      - combobox [ref=f3e608]
+                    - img "down" [ref=f3e610]:
+                      - img [ref=f3e611]
+                - generic [ref=f3e615]:
+                  - generic [ref=f3e618]: 目的地地址市
+                  - generic [ref=f3e622] [cursor=pointer]:
+                    - generic [ref=f3e623]:
+                      - generic: 请选择
+                      - combobox [ref=f3e624]
+                    - img "down" [ref=f3e626]:
+                      - img [ref=f3e627]
+                - generic [ref=f3e631]:
+                  - generic [ref=f3e634]: 目的地地址区
+                  - generic [ref=f3e638] [cursor=pointer]:
+                    - generic [ref=f3e639]:
+                      - generic: 请选择
+                      - combobox [ref=f3e640]
+                    - img "down" [ref=f3e642]:
+                      - img [ref=f3e643]
+                - generic [ref=f3e647]:
+                  - generic [ref=f3e650]: 目的地地址
+                  - textbox [ref=f3e654]
+            - generic [ref=f3e655]:
+              - generic [ref=f3e658]: 货物信息
+              - generic [ref=f3e661]:
+                - generic [ref=f3e664]:
+                  - generic [ref=f3e667]: 包装种类
+                  - generic [ref=f3e671] [cursor=pointer]:
+                    - generic [ref=f3e672]:
+                      - generic: 请选择
+                      - combobox [ref=f3e673]
+                    - img "down" [ref=f3e675]:
+                      - img [ref=f3e676]
+                - generic [ref=f3e680]:
+                  - generic [ref=f3e683]: 中文商品名称
+                  - textbox [ref=f3e687]
+                - generic [ref=f3e690]:
+                  - generic [ref=f3e693]: 货物型号
+                  - textbox [ref=f3e697]
+                - generic [ref=f3e700]:
+                  - generic [ref=f3e703]: 货物性质
+                  - generic [ref=f3e707] [cursor=pointer]:
+                    - generic [ref=f3e708]:
+                      - generic: 请选择
+                      - combobox [ref=f3e709]
+                    - img "down" [ref=f3e711]:
+                      - img [ref=f3e712]
+                - generic [ref=f3e716]:
+                  - generic [ref=f3e719]: 货物数量
+                  - generic [ref=f3e723]:
+                    - spinbutton [ref=f3e724]
+                    - generic:
+                      - button "Increase Value" [ref=f3e725] [cursor=pointer]:
+                        - img "up" [ref=f3e726]:
+                          - img [ref=f3e727]
+                      - button "Decrease Value" [ref=f3e729] [cursor=pointer]:
+                        - img "down" [ref=f3e730]:
+                          - img [ref=f3e731]
+                - generic [ref=f3e735]:
+                  - generic [ref=f3e738]: 件数
+                  - generic [ref=f3e742]:
+                    - spinbutton [ref=f3e743]
+                    - generic:
+                      - button "Increase Value" [ref=f3e744] [cursor=pointer]:
+                        - img "up" [ref=f3e745]:
+                          - img [ref=f3e746]
+                      - button "Decrease Value" [ref=f3e748] [cursor=pointer]:
+                        - img "down" [ref=f3e749]:
+                          - img [ref=f3e750]
+                - generic [ref=f3e754]:
+                  - generic [ref=f3e757]: 唛头
+                  - textbox [ref=f3e761]
+            - generic [ref=f3e762]:
+              - generic [ref=f3e765]: 保险信息
+              - generic [ref=f3e768]:
+                - generic [ref=f3e771]:
+                  - generic [ref=f3e774]: 发票金额
+                  - generic [ref=f3e778]:
+                    - spinbutton [ref=f3e779]
+                    - generic:
+                      - button "Increase Value" [ref=f3e780] [cursor=pointer]:
+                        - img "up" [ref=f3e781]:
+                          - img [ref=f3e782]
+                      - button "Decrease Value" [ref=f3e784] [cursor=pointer]:
+                        - img "down" [ref=f3e785]:
+                          - img [ref=f3e786]
+                - generic [ref=f3e790]:
+                  - generic [ref=f3e793]: 币制中文名称
+                  - generic [ref=f3e797] [cursor=pointer]:
+                    - generic [ref=f3e798]:
+                      - generic: 请选择
+                      - combobox [ref=f3e799]
+                    - img "down" [ref=f3e801]:
+                      - img [ref=f3e802]
+                - generic [ref=f3e806]:
+                  - generic [ref=f3e809]: 加成比例
+                  - generic [ref=f3e813] [cursor=pointer]:
+                    - generic [ref=f3e814]:
+                      - generic: 请选择
+                      - combobox [ref=f3e815]
+                    - img "down" [ref=f3e817]:
+                      - img [ref=f3e818]
+                - generic [ref=f3e822]:
+                  - generic [ref=f3e825]: 预计保险金额
+                  - generic [ref=f3e829]:
+                    - spinbutton [ref=f3e830]
+                    - generic:
+                      - button "Increase Value" [ref=f3e831] [cursor=pointer]:
+                        - img "up" [ref=f3e832]:
+                          - img [ref=f3e833]
+                      - button "Decrease Value" [ref=f3e835] [cursor=pointer]:
+                        - img "down" [ref=f3e836]:
+                          - img [ref=f3e837]
+                - generic [ref=f3e841]:
+                  - generic [ref=f3e844]: 预计保费(人民币)
+                  - generic [ref=f3e848]:
+                    - spinbutton [ref=f3e849]
+                    - generic:
+                      - button "Increase Value" [ref=f3e850] [cursor=pointer]:
+                        - img "up" [ref=f3e851]:
+                          - img [ref=f3e852]
+                      - button "Decrease Value" [ref=f3e854] [cursor=pointer]:
+                        - img "down" [ref=f3e855]:
+                          - img [ref=f3e856]
+                - generic [ref=f3e860]:
+                  - generic [ref=f3e863]: 赔偿偿付地址国家标识
+                  - generic [ref=f3e867] [cursor=pointer]:
+                    - generic [ref=f3e868]:
+                      - generic: 请选择
+                      - combobox [ref=f3e869]
+                    - img "down" [ref=f3e871]:
+                      - img [ref=f3e872]
+                - generic [ref=f3e876]:
+                  - generic [ref=f3e879]: 赔偿偿付地址国家
+                  - generic [ref=f3e883] [cursor=pointer]:
+                    - generic [ref=f3e884]:
+                      - generic: 请选择
+                      - combobox [ref=f3e885]
+                    - img "down" [ref=f3e887]:
+                      - img [ref=f3e888]
+                - generic [ref=f3e892]:
+                  - generic [ref=f3e895]: 赔偿偿付地址省
+                  - generic [ref=f3e899] [cursor=pointer]:
+                    - generic [ref=f3e900]:
+                      - generic: 请选择
+                      - combobox [ref=f3e901]
+                    - img "down" [ref=f3e903]:
+                      - img [ref=f3e904]
+                - generic [ref=f3e908]:
+                  - generic [ref=f3e911]: 赔偿偿付地址市
+                  - generic [ref=f3e915] [cursor=pointer]:
+                    - generic [ref=f3e916]:
+                      - generic: 请选择
+                      - combobox [ref=f3e917]
+                    - img "down" [ref=f3e919]:
+                      - img [ref=f3e920]
+                - generic [ref=f3e924]:
+                  - generic [ref=f3e927]: 赔偿偿付地址区/县
+                  - generic [ref=f3e931] [cursor=pointer]:
+                    - generic [ref=f3e932]:
+                      - generic: 请选择
+                      - combobox [ref=f3e933]
+                    - img "down" [ref=f3e935]:
+                      - img [ref=f3e936]
+                - generic [ref=f3e940]:
+                  - generic [ref=f3e943]: 赔偿偿付地点
+                  - textbox [ref=f3e947]
+                - generic [ref=f3e950]:
+                  - generic [ref=f3e953]: 备注
+                  - textbox [ref=f3e957]
+                - generic [ref=f3e960]:
+                  - generic [ref=f3e963]: 投保附件
+                  - button "upload 选择附件" [ref=f3e970] [cursor=pointer]:
+                    - img "upload" [ref=f3e972]:
+                      - img [ref=f3e973]
+                    - generic [ref=f3e975]: 选择附件
+            - generic [ref=f3e977]:
+              - button "保 存" [ref=f3e979] [cursor=pointer]:
+                - generic [ref=f3e980]: 保 存
+              - button "取 消" [ref=f3e982] [cursor=pointer]:
+                - generic [ref=f3e983]: 取 消
+          - generic [ref=f3e984]:
+            - generic [ref=f3e987]: 历史记录
+            - generic [ref=f3e989]:
+              - tablist [ref=f3e990]:
+                - generic [ref=f3e992]:
+                  - tab "历史版本 2" [ref=f3e994] [cursor=pointer]:
+                    - generic [ref=f3e995]:
+                      - text: 历史版本
+                      - generic [ref=f3e996]: "2"
+                  - tab "审批历史 4" [ref=f3e998] [cursor=pointer]:
+                    - generic [ref=f3e999]:
+                      - text: 审批历史
+                      - generic [ref=f3e1000]: "4"
+                  - tab "修改日志 12" [selected] [ref=f3e1002] [cursor=pointer]:
+                    - generic [ref=f3e1003]:
+                      - text: 修改日志
+                      - generic [ref=f3e1004]: "12"
+              - tabpanel "修改日志 12" [ref=f3e1007]:
+                - table [ref=f3e1014]:
+                  - rowgroup [ref=f3e1020]:
+                    - row "时间 操作人 字段 变更" [ref=f3e1021]:
+                      - columnheader "时间" [ref=f3e1022]
+                      - columnheader "操作人" [ref=f3e1023]
+                      - columnheader "字段" [ref=f3e1024]
+                      - columnheader "变更" [ref=f3e1025]
+                  - rowgroup [ref=f3e1026]:
+                    - row "2026-06-25 14:25:00 谭泽宇 保险公司名称 中国平安→中国人保" [ref=f3e1027]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1028]
+                      - cell "谭泽宇" [ref=f3e1029]
+                      - cell "保险公司名称" [ref=f3e1030]
+                      - cell "中国平安→中国人保" [ref=f3e1031]:
+                        - generic [ref=f3e1032]: 中国平安→中国人保
+                    - row "2026-06-25 14:25:00 谭泽宇 保单单号 PYII2026310100000018→PYII2026310100000023" [ref=f3e1033]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1034]
+                      - cell "谭泽宇" [ref=f3e1035]
+                      - cell "保单单号" [ref=f3e1036]
+                      - cell "PYII2026310100000018→PYII2026310100000023" [ref=f3e1037]:
+                        - generic [ref=f3e1038]: PYII2026310100000018→PYII2026310100000023
+                    - row "2026-06-25 14:25:00 谭泽宇 实际保费 154→168.12" [ref=f3e1039]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1040]
+                      - cell "谭泽宇" [ref=f3e1041]
+                      - cell "实际保费" [ref=f3e1042]
+                      - cell "154→168.12" [ref=f3e1043]:
+                        - generic [ref=f3e1044]: 154→168.12
+                    - row "2026-06-25 14:25:00 谭泽宇 保险公司保单状态 待承保→已承保" [ref=f3e1045]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1046]
+                      - cell "谭泽宇" [ref=f3e1047]
+                      - cell "保险公司保单状态" [ref=f3e1048]
+                      - cell "待承保→已承保" [ref=f3e1049]:
+                        - generic [ref=f3e1050]: 待承保→已承保
+                    - row "2026-06-25 14:25:00 谭泽宇 发票金额 56000→56035" [ref=f3e1051]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1052]
+                      - cell "谭泽宇" [ref=f3e1053]
+                      - cell "发票金额" [ref=f3e1054]
+                      - cell "56000→56035" [ref=f3e1055]:
+                        - generic [ref=f3e1056]: 56000→56035
+                    - row "2026-06-25 14:25:00 谭泽宇 预计保险金额 61600→61638.5" [ref=f3e1057]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1058]
+                      - cell "谭泽宇" [ref=f3e1059]
+                      - cell "预计保险金额" [ref=f3e1060]
+                      - cell "61600→61638.5" [ref=f3e1061]:
+                        - generic [ref=f3e1062]: 61600→61638.5
+                    - row "2026-06-25 14:25:00 谭泽宇 加成比例 发票金额原值100%→发票金额原值110%" [ref=f3e1063]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1064]
+                      - cell "谭泽宇" [ref=f3e1065]
+                      - cell "加成比例" [ref=f3e1066]
+                      - cell "发票金额原值100%→发票金额原值110%" [ref=f3e1067]:
+                        - generic [ref=f3e1068]: 发票金额原值100%→发票金额原值110%
+                    - row "2026-06-25 14:25:00 谭泽宇 途径港 上海浦东国际机场（中国）→广州白云国际机场（中国）" [ref=f3e1069]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1070]
+                      - cell "谭泽宇" [ref=f3e1071]
+                      - cell "途径港" [ref=f3e1072]
+                      - cell "上海浦东国际机场（中国）→广州白云国际机场（中国）" [ref=f3e1073]:
+                        - generic [ref=f3e1074]: 上海浦东国际机场（中国）→广州白云国际机场（中国）
+                    - row "2026-06-25 14:25:00 谭泽宇 车厢类型 普通集装箱→其他" [ref=f3e1075]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1076]
+                      - cell "谭泽宇" [ref=f3e1077]
+                      - cell "车厢类型" [ref=f3e1078]
+                      - cell "普通集装箱→其他" [ref=f3e1079]:
+                        - generic [ref=f3e1080]: 普通集装箱→其他
+                    - row "2026-06-25 14:25:00 谭泽宇 包装种类 纸制或纤维板制盒/箱→木制或竹藤等植物性材料制盒/箱" [ref=f3e1081]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1082]
+                      - cell "谭泽宇" [ref=f3e1083]
+                      - cell "包装种类" [ref=f3e1084]
+                      - cell "纸制或纤维板制盒/箱→木制或竹藤等植物性材料制盒/箱" [ref=f3e1085]:
+                        - generic [ref=f3e1086]: 纸制或纤维板制盒/箱→木制或竹藤等植物性材料制盒/箱
+                    - row "2026-06-25 14:25:00 谭泽宇 预计保费(人民币) 154→168.09" [ref=f3e1087]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1088]
+                      - cell "谭泽宇" [ref=f3e1089]
+                      - cell "预计保费(人民币)" [ref=f3e1090]
+                      - cell "154→168.09" [ref=f3e1091]:
+                        - generic [ref=f3e1092]: 154→168.09
+                    - row "2026-06-25 14:25:00 谭泽宇 件数 2→1" [ref=f3e1093]:
+                      - cell "2026-06-25 14:25:00" [ref=f3e1094]
+                      - cell "谭泽宇" [ref=f3e1095]
+                      - cell "件数" [ref=f3e1096]
+                      - cell "2→1" [ref=f3e1097]:
+                        - generic [ref=f3e1098]: 2→1

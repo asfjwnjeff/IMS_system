@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280, initial-scale=1.0">
+<title>IMS 保险管理系统 v1.0</title>
+<style>
+/* ===== Clean Blue Design System ===== */
+:root {
+  --blue: #1677ff; --blue-light: #e6f4ff; --blue-dark: #0958d9;
+  --green: #52c41a; --green-bg: #f6ffed; --green-border: #b7eb8f;
+  --red: #ff4d4f; --red-bg: #fff2f0; --red-border: #ffccc7;
+  --orange: #faad14; --orange-bg: #fffbe6; --orange-border: #ffe58f;
+  --text: #262626; --text-secondary: #595959; --text-muted: #8c8c8c;
+  --bg-page: #f5f5f5; --bg-card: #ffffff; --bg-header: #fafafa;
+  --border: #f0f0f0; --border-input: #d9d9d9; --sidebar-bg: #001529;
+  --radius: 6px; --radius-lg: 8px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.04); --shadow-hover: 0 2px 8px rgba(0,0,0,0.08);
+  --transition: 0.2s ease;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg-page); color: var(--text); -webkit-font-smoothing: antialiased; min-width: 1280px;
+  display: flex; min-height: 100vh;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  width: 220px; min-width: 220px; background: var(--sidebar-bg); display: flex; flex-direction: column;
+}
+.sidebar-logo {
+  height: 60px; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.15);
+}
+.sidebar-logo h1 { color: #fff; font-size: 16px; font-weight: 600; letter-spacing: 1px; }
+.sidebar-menu { flex:1; padding: 8px 0; overflow-y: auto; }
+.menu-item, .menu-sub { display: flex; align-items: center; gap: 10px;
+  padding: 10px 24px; color: rgba(255,255,255,0.65); cursor: pointer; font-size: 13px;
+  transition: all var(--transition); border: none; background: none; width: 100%; text-align: left;
+}
+.menu-item:hover, .menu-sub:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.menu-item.active, .menu-sub.active { background: var(--blue); color: #fff; }
+.menu-group { margin-bottom: 2px; }
+.menu-group-title {
+  display: flex; align-items: center; gap: 10px; padding: 10px 24px;
+  color: rgba(255,255,255,0.65); font-size: 13px; cursor: pointer;
+  transition: all var(--transition); user-select: none;
+}
+.menu-group-title:hover { color: #fff; }
+.menu-group-title .arrow { margin-left: auto; font-size: 10px; transition: transform 0.2s; }
+.menu-group-title.expanded .arrow { transform: rotate(90deg); }
+.menu-group-children { display: none; }
+.menu-group-children.show { display: block; }
+.menu-sub { padding-left: 52px; font-size: 12px; }
+.menu-icon { width: 14px; text-align: center; font-size: 14px; }
+
+/* ===== Main Area ===== */
+.main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.header {
+  height: 48px; background: #fff; box-shadow: var(--shadow); display: flex;
+  align-items: center; justify-content: space-between; padding: 0 20px; z-index: 10;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.breadcrumb { font-size: 13px; color: var(--text-muted); }
+.breadcrumb span { color: var(--text-secondary); }
+.breadcrumb .sep { margin: 0 6px; color: #d9d9d9; }
+.header-right { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--blue); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.user-menu { position: relative; }
+.user-dropdown {
+  display: none; position: absolute; top: 38px; right: 0; background: #fff;
+  border-radius: var(--radius); box-shadow: 0 4px 12px rgba(0,0,0,0.12); min-width: 140px;
+  border: 1px solid var(--border); z-index: 100;
+}
+.user-dropdown.show { display: block; }
+.user-dropdown-item {
+  padding: 8px 16px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+}
+.user-dropdown-item:hover { background: var(--bg-page); }
+.user-dropdown-item.danger { color: var(--red); }
+.content { padding: 16px; flex: 1; overflow-y: auto; }
+
+/* ===== Card ===== */
+.card {
+  background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.card-header {
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  font-weight: 600; font-size: 15px; display: flex; justify-content: space-between; align-items: center;
+}
+.card-body { padding: 20px; }
+
+/* ===== Button ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 15px;
+  font-size: 13px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border-input);
+  background: #fff; color: var(--text); transition: all var(--transition); height: 32px;
+  white-space: nowrap; font-family: inherit;
+}
+.btn:hover { border-color: var(--blue); color: var(--blue); }
+.btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: #fff; }
+.btn-danger { color: var(--red); }
+.btn-danger:hover { background: var(--red); border-color: var(--red); color: #fff; }
+.btn-link { border: none; background: none; color: var(--blue); padding: 4px 8px; }
+.btn-link:hover { color: var(--blue-dark); border-color: transparent; }
+.btn-link.danger { color: var(--red); }
+.btn-link.danger:hover { color: #fff; background: var(--red); border-radius: var(--radius); }
+.btn-sm { height: 28px; padding: 2px 10px; font-size: 12px; }
+.btn-lg { height: 38px; padding: 6px 24px; font-size: 15px; }
+.btn-warning { background: var(--orange); border-color: var(--orange); color: #fff; }
+.btn-warning:hover { background: #d48806; border-color: #d48806; color: #fff; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-group { display: flex; gap: 8px; align-items: center; }
+
+/* ===== Input ===== */
+.input, .select, .datepicker, .textarea, .input-number {
+  height: 32px; border: 1px solid var(--border-input); border-radius: var(--radius);
+  padding: 4px 11px; font-size: 13px; color: var(--text); background: #fff;
+  transition: all var(--transition); outline: none; font-family: inherit; width: 100%;
+}
+.input:hover, .select:hover, .datepicker:hover, .textarea:hover { border-color: var(--blue); }
+.input:focus, .select:focus, .datepicker:focus, .textarea:focus {
+  border-color: var(--blue); box-shadow: 0 0 0 2px rgba(22,119,255,0.1);
+}
+.select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+.textarea { height: auto; min-height: 64px; resize: vertical; padding: 8px 11px; line-height: 1.5; }
+.input-number { text-align: right; }
+
+/* ===== Table ===== */
+.table-wrap { overflow-x: auto; }
+table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table thead th {
+  background: var(--bg-header); font-size: 12px; font-weight: 600; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.3px; padding: 10px 12px;
+  border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap;
+  position: sticky; top: 0;
+}
+.data-table tbody td {
+  padding: 10px 12px; border-bottom: 1px solid #fafafa; color: var(--text);
+  white-space: nowrap;
+}
+.data-table tbody tr:nth-child(even) td { background: #fafafa; }
+.data-table tbody tr:hover td { background: var(--blue-light) !important; }
+.data-table tbody tr.row-detail td { color: #d9d9d9; }
+.data-table a { color: var(--blue); cursor: pointer; text-decoration: none; }
+.data-table a:hover { color: var(--blue-dark); }
+
+/* ===== Tag ===== */
+.tag {
+  display: inline-block; padding: 1px 8px; border-radius: var(--radius); font-size: 11px;
+  font-weight: 500; line-height: 18px; border: 1px solid;
+}
+.tag-default { color: #595959; background: #fafafa; border-color: #d9d9d9; }
+.tag-success { color: #52c41a; background: #f6ffed; border-color: #b7eb8f; }
+.tag-error { color: #ff4d4f; background: #fff2f0; border-color: #ffccc7; }
+.tag-warning { color: #faad14; background: #fffbe6; border-color: #ffe58f; }
+.tag-processing { color: #1677ff; background: #e6f4ff; border-color: #91caff; }
+.tag-blue { color: #1677ff; background: #e6f4ff; border-color: #91caff; }
+.tag-orange { color: #fa8c16; background: #fff7e6; border-color: #ffd591; }
+
+/* ===== Pagination ===== */
+.pagination {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  margin-top: 16px; padding-top: 12px; font-size: 13px; color: var(--text-secondary);
+}
+.pagination .total { margin-right: auto; }
+.pg-btn {
+  width: 32px; height: 32px; border: 1px solid var(--border-input); border-radius: var(--radius);
+  background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;
+}
+.pg-btn:hover { border-color: var(--blue); color: var(--blue); }
+.pg-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.pg-select { height: 32px; font-size: 13px; padding: 0 8px; border-radius: var(--radius); border: 1px solid var(--border-input); }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #fff; border-radius: var(--radius-lg); box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  max-width: 600px; width: 90%; max-height: 80vh; display: flex; flex-direction: column;
+}
+.modal.wide { max-width: 800px; }
+.modal-header {
+  padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); padding: 4px; }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-footer {
+  padding: 12px 24px; border-top: 1px solid var(--border); display: flex;
+  justify-content: flex-end; gap: 8px;
+}
+
+/* ===== Form ===== */
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
+.form-label.required::after { content: ' *'; color: var(--red); }
+.form-row { display: flex; gap: 16px; }
+.form-row > * { flex: 1; }
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 24px; }
+.form-grid.col-2 { grid-template-columns: repeat(2, 1fr); }
+.form-span-2 { grid-column: span 2; }
+.form-inline { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 12px; }
+
+/* ===== Section Head ===== */
+.section-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.section-head-line { display: block; width: 3px; height: 16px; background: var(--blue); border-radius: 2px; flex-shrink: 0; }
+.section-head-title { font-size: 14px; font-weight: 600; color: var(--text); }
+
+/* ===== Search Panel ===== */
+.search-panel {
+  margin-bottom: 12px; padding: 12px 16px; background: #fff;
+  border: 1px solid var(--blue); border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: none;
+}
+.search-panel.show { display: block; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
+  border-radius: 4px; font-size: 12px; cursor: pointer; user-select: none; margin: 3px;
+  transition: all 0.15s;
+}
+.chip-on { border: 1px solid #91caff; background: #e6f4ff; color: #1677ff; }
+.chip-off { border: 1px solid #f0f0f0; background: #fff; color: #595959; }
+.chip-off:hover { border-color: #91caff; }
+
+/* ===== Segmented ===== */
+.segmented {
+  display: inline-flex; border-radius: var(--radius); background: #f0f0f0; overflow: hidden;
+}
+.seg-option {
+  padding: 4px 14px; font-size: 13px; cursor: pointer; border: none; background: none; font-family: inherit;
+  transition: all var(--transition);
+}
+.seg-option.active { background: #fff; box-shadow: var(--shadow); font-weight: 500; }
+
+/* ===== Diff Highlight ===== */
+.diff-highlight {
+  border: 2px solid var(--orange) !important; background: var(--orange-bg) !important; border-radius: var(--radius);
+  padding: 6px 8px !important;
+}
+.diff-old-value { font-size: 11px; color: #d48806; margin-top: 4px; }
+
+/* ===== Report Claims Status ===== */
+.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+
+/* ===== Tabs ===== */
+.tabs { border-bottom: 1px solid var(--border); margin-bottom: 0; display: flex; gap: 0; }
+.tab {
+  padding: 10px 20px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent;
+  color: var(--text-secondary); transition: all var(--transition); display: flex; align-items: center; gap: 6px;
+}
+.tab:hover { color: var(--blue); }
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
+.tab-content { display: none; padding: 16px 0; }
+.tab-content.show { display: block; }
+
+/* ===== Timeline ===== */
+.timeline { padding-left: 20px; border-left: 2px solid var(--blue); }
+.timeline-item { position: relative; padding-left: 24px; margin-bottom: 20px; }
+.timeline-item::before {
+  content: ''; position: absolute; left: -27px; top: 4px; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--blue); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--blue);
+}
+.timeline-item.green::before { background: #52c41a; box-shadow: 0 0 0 2px #52c41a; }
+.timeline-item.red::before { background: #ff4d4f; box-shadow: 0 0 0 2px #ff4d4f; }
+
+/* ===== Empty ===== */
+.empty { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px; }
+
+/* ===== Toolbar ===== */
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+/* ===== Dropdown ===== */
+.dropdown { position: relative; display: inline-block; }
+.dropdown-menu {
+  display: none; position: absolute; top: 100%; right: 0; background: #fff;
+  border-radius: var(--radius); box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  min-width: 160px; z-index: 50; border: 1px solid var(--border);
+}
+.dropdown-menu.show { display: block; }
+.dropdown-menu .item {
+  display: block; padding: 8px 16px; font-size: 13px; cursor: pointer; border: none;
+  background: none; width: 100%; text-align: left; font-family: inherit; color: var(--text);
+}
+.dropdown-menu .item:hover { background: var(--bg-page); }
+.dropdown-menu .item.danger { color: var(--red); }
+.dropdown-menu .divider { border-top: 1px solid var(--border); margin: 4px 0; }
+
+/* ===== Page Visibility ===== */
+.page-view { display: none; }
+.page-view.active { display: block; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 2000;
+  padding: 10px 20px; border-radius: var(--radius); color: #fff; font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2); pointer-events: none; opacity: 0; transition: opacity 0.3s;
+}
+.toast.show { opacity: 1; }
+.toast-success { background: #52c41a; }
+.toast-error { background: #ff4d4f; }
+.toast-info { background: var(--blue); }
+
+/* ===== Confirm Modal ===== */
+.confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 2000; align-items: center; justify-content: center; }
+.confirm-overlay.show { display: flex; }
+.confirm-box { background: #fff; border-radius: var(--radius-lg); padding: 32px; text-align: center; max-width: 420px; }
+.confirm-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.confirm-body { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
+
+/* ===== Detail Field ===== */
+.detail-field { margin-bottom: 12px; }
+.detail-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.detail-value { font-size: 14px; color: var(--text); min-height: 22px; word-break: break-all; }
+
+/* ===== Description Table ===== */
+.desc-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); font-size: 13px; }
+.desc-table th, .desc-table td { padding: 10px 14px; border: 1px solid var(--border); text-align: left; }
+.desc-table th { background: var(--bg-header); color: var(--text-secondary); font-weight: 500; width: 140px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+
+/* History row */
+.row-history td { color: #bfbfbf !important; font-style: italic; }
+.row-history td a { color: #91caff !important; }
+
+/* ===== Version bar ===== */
+.version-bar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 8px 14px;
+  background: var(--orange-bg); border: 1px solid var(--orange-border); border-radius: var(--radius);
+  font-size: 13px; color: #ad6800;
+}
+
+/* ===== Column settings panel ===== */
+.col-setting-list { max-height: 340px; overflow-y: auto; }
+.col-setting-row {
+  display: flex; align-items: center; gap: 4px; padding: 5px 6px; border-radius: 4px;
+  margin-bottom: 2px; cursor: grab; transition: all 0.15s;
+}
+.col-setting-row.on { background: #e6f4ff; border: 1px solid #bae0ff; }
+.col-setting-row.off { background: #fff; border: 1px solid transparent; }
+.col-setting-row:hover { border-color: #d9d9d9; }
+.col-setting-row label { flex: 1; display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+.col-setting-row input[type="checkbox"] { accent-color: var(--blue); }
+
+/* Responsive detail grid */
+.detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 24px; }
+.detail-grid .span2 { grid-column: span 2; }
+@media (max-width: 1100px) { .detail-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ===== 保单回填 Modal 样式 ===== */
+.file-upload-box {
+  border: 1px dashed var(--border-input); border-radius: var(--radius); padding: 16px;
+  text-align: center; cursor: pointer; color: var(--text-muted); font-size: 13px;
+}
+.file-upload-box:hover { border-color: var(--blue); color: var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo"><h1>IMS 保险管理系统</h1></div>
+  <nav class="sidebar-menu" id="sidebarMenu"></nav>
+</aside>
+
+<!-- Main -->
+<div class="main-area">
+  <header class="header">
+    <div class="header-left">
+      <span id="breadcrumb" class="breadcrumb">首页</span>
+    </div>
+    <div class="header-right user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
+      <div class="avatar">管</div>
+      <span style="font-size:13px;">管理员</span>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-item">👤 个人中心</div>
+        <div class="user-dropdown-item">⚙️ 布局设置</div>
+        <div style="border-top:1px solid #f0f0f0;margin:4px 0"></div>
+        <div class="user-dropdown-item danger">🚪 退出登录</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content" id="appContent"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">确认操作</div>
+    <div class="confirm-body" id="confirmBody"></div>
+    <div class="btn-group" style="justify-content:center">
+      <button class="btn" onclick="closeConfirm()">取消</button>
+      <button class="btn btn-danger" id="confirmOkBtn">确认</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// MOCK DATA
+// ============================================================
+const mockApplications = [
+  {
+    id:1, businessRefNo:'PVG-AI26060171', insuranceCategory:'非保入库',
+    applicantCompany:'上海泓明国际货运有限公司', customerName:'深圳精智达半导体技术有限公司',
+    insuredCompany:'深圳精智达半导体技术有限公司',
+    applicationType:'批改申请', approvalStatus:'审批通过', documentStatus:'', approvalRemark:'批改内容已核实，保费调整无误',
+    applicationNo:'TB202606250001', applicationTime:'2026-06-25 09:40:31',
+    applicantName:'谭泽宇', cosOrderStatus:'', effectiveStatus:'生效', isBackfill:'已经回填', dataSource:'fms',
+    isLatest:true, version:2, previousId:4,
+    transitPort:'广州白云国际机场（中国）', carriageType:'其他', packageType:'木制或竹藤等植物性材料制盒/箱',
+    goodsNameCN:'升降搬运装置等(详见COMMERCIALINVOICE)', quantity:1, currencyName:'美元',
+    invoiceAmount:56035, estimatedInsuranceAmount:61638.5, markupRatio:'发票金额原值110%',
+    estimatedPremium:168.09, actualPremium:168.12, insuranceCompany:'中国人保',
+    policyNo:'PYII2026310100000023', insurancePolicyStatus:'已承保',
+    insuranceCorrectionStatus:'已批改', correctionActualPremium:168.12, correctionCompanyNo:'EYII202631010000000599',
+    applicantCreditCode:'91310115MA1H2B3C4D', applicantContactName:'谭泽宇', applicantContactPhone:'021-58345678',
+    applicantContactAddress:'上海市浦东新区张江高科技园区碧波路690号',
+    customerCreditCode:'91440300MA5D6E7F8G', insuredCreditCode:'91440300MA5D6E7F8G',
+    insuredContactName:'王明辉', insuredContactPhone:'0755-86543210',
+    insuredAddressCountryCode:'国内(Domestic)', insuredAddressCountry:'中国', insuredAddressProvince:'广东省', insuredAddressCity:'深圳市', insuredAddressDistrict:'南山区', insuredAddress:'深圳市南山区粤海街道科苑路15号',
+    insuranceProductType:'进口运输险', transportMode:'航空运输', invoiceNo:'INV-2026-0625-001', billNo:'99993756972',
+    vesselName:'CA1234', transferPlateNo:'', isContainer:'否',
+    specialTransportRequirement:'无', departureTime:'2026-06-26',
+    originCountryCode:'国际(International)', originCountry:'美国', originProvince:'加利福尼亚州', originCity:'洛杉矶',
+    originDistrict:'', originAddress:'LOS ANGELES, CA 90045',
+    destCountryCode:'国内(Domestic)', destCountry:'中国', destProvince:'上海市', destCity:'上海市', destDistrict:'浦东新区', destAddress:'上海浦东国际机场海关监管仓库',
+    goodsModel:'HX-2000', goodsNature:'新货', goodsQuantity:100, shippingMark:'N/M',
+    compensationCountryCode:'国内(Domestic)', compensationCountry:'中国', compensationProvince:'广东省', compensationCity:'深圳市', compensationDistrict:'南山区', compensationAddress:'深圳市南山区粤海街道科苑路15号',
+    remark:'', insuranceFiles:'', policyFiles:'', correctionFiles:'',
+  },
+  {
+    id:4, businessRefNo:'PVG-AI26060171', insuranceCategory:'非保入库',
+    applicantCompany:'上海泓明国际货运有限公司', customerName:'深圳精智达半导体技术有限公司',
+    insuredCompany:'深圳精智达半导体技术有限公司',
+    applicationType:'新增投保单', approvalStatus:'审批通过', documentStatus:'', approvalRemark:'材料齐全，同意承保',
+    applicationNo:'TB202606200005', applicationTime:'2026-06-20 10:15:00',
+    applicantName:'谭泽宇', cosOrderStatus:'', effectiveStatus:'生效', isBackfill:'已经回填', dataSource:'fms',
+    isLatest:false, version:1, previousId:null,
+    transitPort:'上海浦东国际机场（中国）', carriageType:'普通集装箱', packageType:'纸制或纤维板制盒/箱',
+    goodsNameCN:'升降搬运装置等', quantity:2, currencyName:'美元', invoiceAmount:56000,
+    estimatedInsuranceAmount:61600, markupRatio:'发票金额原值100%', estimatedPremium:154, actualPremium:154,
+    insuranceCompany:'中国平安', policyNo:'PYII2026310100000018', insurancePolicyStatus:'待承保',
+    insuranceCorrectionStatus:'', correctionActualPremium:0, correctionCompanyNo:'',
+    applicantCreditCode:'91310115MA1H2B3C4D', applicantContactName:'谭泽宇', applicantContactPhone:'021-58345678',
+    applicantContactAddress:'上海市浦东新区张江高科技园区碧波路690号',
+    customerCreditCode:'91440300MA5D6E7F8G', insuredCreditCode:'91440300MA5D6E7F8G',
+    insuredContactName:'王明辉', insuredContactPhone:'0755-86543210',
+    insuredAddressCountryCode:'国内(Domestic)', insuredAddressCountry:'中国', insuredAddressProvince:'广东省', insuredAddressCity:'深圳市', insuredAddressDistrict:'南山区', insuredAddress:'深圳市南山区粤海街道科苑路15号',
+    insuranceProductType:'进口运输险', transportMode:'航空运输', invoiceNo:'INV-2026-0620-001', billNo:'99993756970',
+    vesselName:'CA1230', transferPlateNo:'', isContainer:'是',
+    specialTransportRequirement:'无', departureTime:'2026-06-21',
+    originCountryCode:'国际(International)', originCountry:'美国', originProvince:'加利福尼亚州', originCity:'洛杉矶',
+    originDistrict:'', originAddress:'LOS ANGELES, CA 90045',
+    destCountryCode:'国内(Domestic)', destCountry:'中国', destProvince:'上海市', destCity:'上海市', destDistrict:'浦东新区', destAddress:'上海浦东国际机场海关监管仓库',
+    goodsModel:'HX-2000', goodsNature:'新货', goodsQuantity:100, shippingMark:'N/M',
+    compensationCountryCode:'国内(Domestic)', compensationCountry:'中国', compensationProvince:'广东省', compensationCity:'深圳市', compensationDistrict:'南山区', compensationAddress:'深圳市南山区粤海街道科苑路15号',
+    remark:'', insuranceFiles:'', policyFiles:'', correctionFiles:'',
+  },
+  {
+    id:2, businessRefNo:'PAC-INTEL26060002Y', insuranceCategory:'非保入库',
+    applicantCompany:'上海泓明供应链有限公司', customerName:'英特尔贸易（上海）有限公司',
+    insuredCompany:'英特尔贸易（上海）有限公司',
+    applicationType:'新增投保单', approvalStatus:'审批通过', documentStatus:'', approvalRemark:'',
+    applicationNo:'TB202606260002', applicationTime:'2026-06-26 08:20:15',
+    applicantName:'费斌', cosOrderStatus:'', effectiveStatus:'生效', isBackfill:'已经回填', dataSource:'fms',
+    isLatest:true, version:1, previousId:null,
+    transitPort:'', carriageType:'其他', packageType:'天然木托', goodsNameCN:'中央处理器', quantity:16,
+    currencyName:'人民币', invoiceAmount:37073210, estimatedInsuranceAmount:37073210, markupRatio:'发票金额原值100%',
+    estimatedPremium:9268.3, actualPremium:9268.3, insuranceCompany:'中国人保',
+    policyNo:'PYDL202631010000002682', insurancePolicyStatus:'已承保',
+    insuranceCorrectionStatus:'', correctionActualPremium:0, correctionCompanyNo:'',
+    applicantCreditCode:'91310115MA1H8D9E0F', applicantContactName:'费斌', applicantContactPhone:'021-50497890',
+    applicantContactAddress:'上海市浦东新区外高桥保税区富特西一路289号',
+    customerCreditCode:'91310000MA1G5H6I7J', insuredCreditCode:'91310000MA1G5H6I7J',
+    insuredContactName:'李经理', insuredContactPhone:'021-50491234',
+    insuredAddressCountryCode:'国内(Domestic)', insuredAddressCountry:'中国', insuredAddressProvince:'上海市', insuredAddressCity:'上海市', insuredAddressDistrict:'浦东新区', insuredAddress:'上海市浦东新区金桥开发区',
+    insuranceProductType:'国内运输险', transportMode:'公路运输', invoiceNo:'INV-2026-0626-CPU', billNo:'BL20260626999',
+    vesselName:'沪B·87654', transferPlateNo:'', isContainer:'否',
+    specialTransportRequirement:'无', departureTime:'2026-06-27',
+    originCountryCode:'国内(Domestic)', originCountry:'中国', originProvince:'辽宁省', originCity:'大连市', originDistrict:'金州区', originAddress:'大连市金州区经济技术开发区',
+    destCountryCode:'国内(Domestic)', destCountry:'中国', destProvince:'上海市', destCity:'上海市', destDistrict:'浦东新区', destAddress:'上海市浦东新区外高桥保税区',
+    goodsModel:'i9-14900K', goodsNature:'新货', goodsQuantity:3200, shippingMark:'INTEL-SH',
+    compensationCountryCode:'国内(Domestic)', compensationCountry:'中国', compensationProvince:'上海市', compensationCity:'上海市', compensationDistrict:'浦东新区', compensationAddress:'上海市浦东新区外高桥保税区富特西一路289号',
+    remark:'英特尔CPU批量运输', insuranceFiles:'', policyFiles:'', correctionFiles:'',
+  },
+  {
+    id:3, businessRefNo:'PAC-JZDA26060003Z', insuranceCategory:'非保入库',
+    applicantCompany:'上海泓明国际货运有限公司', customerName:'深圳精智达半导体技术有限公司',
+    insuredCompany:'深圳精智达半导体技术有限公司',
+    applicationType:'新增投保单', approvalStatus:'待审核', documentStatus:'', approvalRemark:'',
+    applicationNo:'TB202606280003', applicationTime:'2026-06-28 14:30:22',
+    applicantName:'谭泽宇', cosOrderStatus:'', effectiveStatus:'', isBackfill:'未回填', dataSource:'fms',
+    isLatest:true, version:1, previousId:null,
+    transitPort:'上海浦东国际机场（中国）', carriageType:'其他', packageType:'木制或竹藤等植物性材料制盒/箱',
+    goodsNameCN:'老化测试板', quantity:3, currencyName:'美元', invoiceAmount:1166200,
+    estimatedInsuranceAmount:1282820, markupRatio:'发票金额原值110%', estimatedPremium:3498.3, actualPremium:3498.32,
+    insuranceCompany:'中国人保', policyNo:'PYII202631010000002389', insurancePolicyStatus:'已承保',
+    insuranceCorrectionStatus:'', correctionActualPremium:0, correctionCompanyNo:'',
+    applicantCreditCode:'91310115MA1H2B3C4D', applicantContactName:'谭泽宇', applicantContactPhone:'021-58345678',
+    applicantContactAddress:'上海市浦东新区张江高科技园区碧波路690号',
+    customerCreditCode:'91340100MA5K8L9M0N', insuredCreditCode:'91340100MA5K8L9M0N',
+    insuredContactName:'陈伟', insuredContactPhone:'0551-62345678',
+    insuredAddressCountryCode:'国内(Domestic)', insuredAddressCountry:'中国', insuredAddressProvince:'安徽省', insuredAddressCity:'合肥市', insuredAddressDistrict:'蜀山区', insuredAddress:'合肥市蜀山区高新技术产业开发区望江西路800号',
+    insuranceProductType:'进口运输险', transportMode:'航空运输', invoiceNo:'INV-2026-0626-002', billNo:'99993756973',
+    vesselName:'MU5678', transferPlateNo:'', isContainer:'否',
+    specialTransportRequirement:'无', departureTime:'2026-06-28',
+    originCountryCode:'国际(International)', originCountry:'美国', originProvince:'德克萨斯州', originCity:'达拉斯',
+    originDistrict:'', originAddress:'DALLAS, TX 75201',
+    destCountryCode:'国内(Domestic)', destCountry:'中国', destProvince:'上海市', destCity:'上海市', destDistrict:'浦东新区', destAddress:'上海浦东国际机场',
+    goodsModel:'ATE-5000', goodsNature:'新货', goodsQuantity:30, shippingMark:'JZDA-SH',
+    compensationCountryCode:'国内(Domestic)', compensationCountry:'中国', compensationProvince:'安徽省', compensationCity:'合肥市', compensationDistrict:'蜀山区', compensationAddress:'合肥市蜀山区高新技术产业开发区望江西路800号',
+    remark:'', insuranceFiles:'', policyFiles:'', correctionFiles:'',
+  },
+  {
+    id:5, businessRefNo:'PAC-TEST26060005Y', insuranceCategory:'保税返库',
+    applicantCompany:'上海泓明供应链有限公司', customerName:'群福电子科技（上海）有限公司',
+    insuredCompany:'群福电子科技（上海）有限公司',
+    applicationType:'新增投保单', approvalStatus:'待发起', documentStatus:'', approvalRemark:'',
+    applicationNo:'TB202606290005', applicationTime:'2026-06-29 11:00:00',
+    applicantName:'刘畅', cosOrderStatus:'', effectiveStatus:'', isBackfill:'未回填', dataSource:'cos',
+    isLatest:true, version:1, previousId:null,
+    transitPort:'', carriageType:'普通集装箱', packageType:'纸制或纤维板制盒/箱', goodsNameCN:'电子元器件', quantity:50,
+    currencyName:'人民币', invoiceAmount:5200000, estimatedInsuranceAmount:5720000, markupRatio:'发票金额原值110%',
+    estimatedPremium:12800, insuranceCompany:'太平洋保险',
+    policyNo:'', insurancePolicyStatus:'待承保',
+    insuranceCorrectionStatus:'', correctionActualPremium:0, correctionCompanyNo:'',
+    applicantCreditCode:'91310115MA1H8D9E0F', applicantContactName:'费斌', applicantContactPhone:'021-50497890',
+    applicantContactAddress:'上海市浦东新区外高桥保税区富特西一路289号',
+    customerCreditCode:'91310115MA1K2L3M4N', insuredCreditCode:'91310115MA1K2L3M4N',
+    insuredContactName:'刘畅', insuredContactPhone:'021-50493344',
+    insuredAddressCountryCode:'国内(Domestic)', insuredAddressCountry:'中国', insuredAddressProvince:'上海市', insuredAddressCity:'上海市', insuredAddressDistrict:'浦东新区', insuredAddress:'上海市浦东新区外高桥保税区',
+    insuranceProductType:'进口运输险', transportMode:'水路运输', invoiceNo:'INV-2026-0629', billNo:'BL20260629001',
+    vesselName:'COSCO SHIPPING', transferPlateNo:'', isContainer:'是',
+    specialTransportRequirement:'无', departureTime:'2026-06-30',
+    originCountryCode:'国际(International)', originCountry:'日本', originProvince:'东京都', originCity:'东京', originDistrict:'', originAddress:'TOKYO, JAPAN',
+    destCountryCode:'国内(Domestic)', destCountry:'中国', destProvince:'上海市', destCity:'上海市', destDistrict:'浦东新区', destAddress:'上海外高桥港区',
+    goodsModel:'IC-7805', goodsNature:'新货', goodsQuantity:5000, shippingMark:'QF-SH',
+    compensationCountryCode:'国内(Domestic)', compensationCountry:'中国', compensationProvince:'上海市', compensationCity:'上海市', compensationDistrict:'浦东新区', compensationAddress:'上海市浦东新区外高桥保税区',
+    remark:'紧急订单，请优先处理', insuranceFiles:'', policyFiles:'', correctionFiles:'',
+  },
+];
+
+const mockClaims = [
+  {id:1,reportNo:'BA202605270001',reportStatus:'审批拒绝',reportTime:'2026-05-27 13:52:50',applicantName:'曾婷婷',policyNo:'PYII202631010000001565',insuranceCompany:'人保财险',insuredCompany:'辰源微（苏州）半导体科技有限公司',claimResult:'-'},
+  {id:2,reportNo:'BA202606050001',reportStatus:'审批通过',reportTime:'2026-06-05 13:58:52',applicantName:'曾婷婷',policyNo:'PYII202631010000002054',insuranceCompany:'人保财险',insuredCompany:'大昌洋行（上海）有限公司',claimResult:'1'},
+  {id:3,reportNo:'BA202606170001',reportStatus:'审批通过',reportTime:'2026-06-17 14:43:09',applicantName:'唐明元',policyNo:'PYII202631010000002242',insuranceCompany:'人保财险',insuredCompany:'萍乡德博科技股份有限公司',claimResult:'-'},
+  {id:4,reportNo:'BA202606250001',reportStatus:'已确认',reportTime:'2026-06-25 16:47:20',applicantName:'刘畅',policyNo:'PYII202631010000002321',insuranceCompany:'中国人保',insuredCompany:'群福电子科技（上海）有限公司',claimResult:'拒赔'},
+];
+
+const mockExchangeRates = [
+  {id:1,insuranceCompany:'中国人保',exchangeRate:7.245600,effectiveDate:'2026-06-01',expiryDate:'2026-12-31',currency:'美元',creator:'管理员',createTime:'2026-05-28 14:30:00'},
+  {id:2,insuranceCompany:'中国平安',exchangeRate:7.243200,effectiveDate:'2026-06-15',expiryDate:'2026-12-31',currency:'美元',creator:'管理员',createTime:'2026-06-10 09:15:00'},
+  {id:3,insuranceCompany:'人保财险',exchangeRate:7.247800,effectiveDate:'2026-07-01',expiryDate:'2027-06-30',currency:'美元',creator:'张三',createTime:'2026-06-25 16:00:00'},
+];
+
+const mockInsuranceRates = [
+  {id:1,insuranceCompany:'中国人保',rate:0.003500,effectiveDate:'2026-06-01',expiryDate:'2026-12-31',cargoType:'电子元器件/集成电路/半导体设备',status:'启用',creator:'管理员',createTime:'2026-05-28 14:30:00',cargoValueRMB:null,agreementNo:'',minCharge:50,packageType:'',oldNewType:'新货',remark:''},
+  {id:2,insuranceCompany:'中国平安',rate:0.004200,effectiveDate:'2026-06-01',expiryDate:'2026-12-31',cargoType:'机械设备/精密仪器',status:'启用',creator:'管理员',createTime:'2026-05-30 10:00:00',cargoValueRMB:null,agreementNo:'PA-2026-001',minCharge:100,packageType:'',oldNewType:'新货',remark:''},
+  {id:3,insuranceCompany:'太平洋保险',rate:0.003800,effectiveDate:'2026-07-01',expiryDate:'2027-06-30',cargoType:'化工产品/原材料',status:'禁用',creator:'张三',createTime:'2026-06-25 16:00:00',cargoValueRMB:null,agreementNo:'',minCharge:80,packageType:'',oldNewType:'新货',remark:'待审批后启用'},
+];
+
+// Mock history data for application id=1
+const mockHistoryVersions = {
+  1: [{version:1,timestamp:'2026-06-20 10:15:00',label:'原始投保申请',data:{insuranceCompany:'中国平安',actualPremium:154,estimatedPremium:154,policyNo:'PYII2026310100000018'}}],
+};
+const mockApprovalHistory = {
+  1: [
+    {id:1,timestamp:'2026-06-20 12:00:00',approver:'李经理',action:'审批通过',comment:'材料齐全，同意承保'},
+    {id:2,timestamp:'2026-06-25 08:00:00',approver:'王总监',action:'审批通过',comment:'批改内容已核实，保费调整无误'},
+  ],
+};
+const mockChangeLogs = {
+  1: [
+    {id:1,timestamp:'2026-06-25 09:40:31',user:'谭泽宇',fieldLabel:'保险公司名称',oldValue:'中国平安',newValue:'中国人保'},
+    {id:2,timestamp:'2026-06-25 09:40:31',user:'谭泽宇',fieldLabel:'保单单号',oldValue:'PYII2026310100000018',newValue:'PYII2026310100000023'},
+    {id:3,timestamp:'2026-06-25 09:40:31',user:'谭泽宇',fieldLabel:'实际保费',oldValue:'154',newValue:'168.12'},
+  ],
+};
+
+const INSURANCE_COMPANIES = ['中国人保','中国平安','人保财险','太平洋保险'];
+const APPROVAL_STATUSES = ['审批通过','审批拒绝','审批中','已确认'];
+const INSURANCE_POLICY_STATUSES = ['已承保','已批改','待承保'];
+const CLAIM_STATUSES = ['审批通过','审批拒绝','已确认','待审批'];
+const CURRENCIES = ['人民币','美元','欧元','英镑','日元','港元','台币','韩元','新加坡元','加拿大元','澳大利亚元','瑞士法郎','澳门元','马来西亚林吉特'];
+const COUNTRIES = ['中国','美国','日本','韩国','德国','英国','新加坡','马来西亚','澳大利亚','加拿大'];
+const PACKAGE_TYPES = ['木制或竹藤等植物性材料制盒/箱','纸制或纤维板制盒/箱','天然木托','球状罐类','普通集装箱','其他'];
+const OLD_NEW_TYPES = ['新货','旧货'];
+
+// ============================================================
+// APP STATE
+// ============================================================
+const state = {
+  currentPage: 'policyManage/insuranceapplication',
+  viewMode: 'latest', // 'latest' or 'all'
+  backfillModalOpen: false,
+  correctionModalOpen: false,
+  backfillRecord: null,
+  correctionRecord: null,
+  showChanges: false,
+  detailId: null,
+  editId: null,
+  claimDetailId: null,
+  exchangeRateModal: false,
+  exchangeRateEdit: null,
+  rateModal: false,
+  rateEdit: null,
+  claimConfirmModal: false,
+  claimConfirmRecord: null,
+  searchPanelOpen: false,
+  menuGroups: {},
+};
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast toast-'+type+' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ============================================================
+// CONFIRM
+// ============================================================
+let confirmCallback = null;
+function showConfirm(title, body, onOk) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmBody').textContent = body;
+  document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); if(onOk) onOk(); };
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('show');
+  confirmCallback = null;
+}
+
+// ============================================================
+// DROPDOWNS
+// ============================================================
+function toggleDropdown(id) {
+  const menu = document.getElementById(id);
+  const isOpen = menu.classList.contains('show');
+  // Close all dropdowns first
+  document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+  if (!isOpen) menu.classList.add('show');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+  }
+});
+
+// ============================================================
+// SIDEBAR MENU
+// ============================================================
+const menuConfig = [
+  { type: 'item', key: '/index', label: '首页', icon: '🏠' },
+  { type: 'group', key: 'system', label: '系统管理', icon: '⚙️', children: [
+    {key:'/system/user',label:'用户管理'},{key:'/system/role',label:'角色管理'},{key:'/system/menu',label:'菜单管理'},
+    {key:'/system/dept',label:'部门管理'},{key:'/system/post',label:'岗位管理'},{key:'/system/dict',label:'字典管理'},
+    {key:'/system/config',label:'参数设置'},{key:'/system/notice',label:'通知公告'},
+  ]},
+  { type: 'group', key: 'monitor', label: '系统监控', icon: '📊', children: [
+    {key:'/monitor/online',label:'在线用户'},{key:'/monitor/job',label:'定时任务'},
+    {key:'/monitor/druid',label:'数据监控'},{key:'/monitor/server',label:'服务监控'},{key:'/monitor/cacheList',label:'缓存列表'},
+  ]},
+  { type: 'group', key: 'basic', label: '基础信息', icon: '🗄️', children: [
+    {key:'base/premiumexchangerateallocation',label:'保费汇率配置'},
+    {key:'base/detailsoftheinsurancerateconfiguration',label:'保费费率配置'},
+  ]},
+  { type: 'group', key: 'policy', label: '保单管理', icon: '📋', children: [
+    {key:'policyManage/insuranceapplication',label:'投保申请表'},
+  ]},
+  { type: 'group', key: 'claims', label: '报案理赔', icon: '🔔', children: [
+    {key:'claimsManage/reportClaims',label:'报案理赔管理'},
+  ]},
+];
+
+function renderSidebar() {
+  const container = document.getElementById('sidebarMenu');
+  let html = '';
+  menuConfig.forEach(item => {
+    if (item.type === 'item') {
+      const active = state.currentPage.startsWith(item.key.replace('/','')) ? ' active' : '';
+      html += `<button class="menu-item${active}" onclick="navigateTo('${item.key}')"><span class="menu-icon">${item.icon}</span>${item.label}</button>`;
+    } else if (item.type === 'group') {
+      const expanded = state.menuGroups[item.key] !== false;
+      html += `<div class="menu-group">
+        <div class="menu-group-title${expanded?' expanded':''}" onclick="toggleMenuGroup('${item.key}')">
+          <span class="menu-icon">${item.icon}</span>${item.label}<span class="arrow">▶</span>
+        </div>
+        <div class="menu-group-children${expanded?' show':''}" id="menuGroup_${item.key}">`;
+      item.children.forEach(child => {
+        const active = state.currentPage === child.key ? ' active' : '';
+        html += `<button class="menu-sub${active}" onclick="navigateTo('${child.key}')">${child.label}</button>`;
+      });
+      html += `</div></div>`;
+    }
+  });
+  container.innerHTML = html;
+}
+
+function toggleMenuGroup(key) {
+  state.menuGroups[key] = state.menuGroups[key] === false ? true : false;
+  const children = document.getElementById('menuGroup_'+key);
+  const title = children.previousElementSibling;
+  if (state.menuGroups[key] === false) {
+    children.classList.remove('show');
+    title.classList.remove('expanded');
+  } else {
+    children.classList.add('show');
+    title.classList.add('expanded');
+  }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const breadcrumbMap = {
+  '/index':'首页',
+  'base/premiumexchangerateallocation':'保费汇率配置',
+  'base/detailsoftheinsurancerateconfiguration':'保费费率配置',
+  'policyManage/insuranceapplication':'投保申请表',
+  'policyManage/insuranceapplicationDetail':'投保单详情',
+  'policyManage/insuranceapplicationEdit':'编辑投保单',
+  'claimsManage/reportClaims':'报案理赔管理',
+  'claimsManage/reportClaimsAdd':'新增报案',
+  'claimsManage/reportClaimsDetail':'报案详情',
+};
+const parentMap = {
+  'base/premiumexchangerateallocation':'基础信息',
+  'base/detailsoftheinsurancerateconfiguration':'基础信息',
+  'policyManage/insuranceapplication':'保单管理',
+  'policyManage/insuranceapplicationDetail':'保单管理',
+  'policyManage/insuranceapplicationEdit':'保单管理',
+  'claimsManage/reportClaims':'报案理赔',
+  'claimsManage/reportClaimsAdd':'报案理赔',
+  'claimsManage/reportClaimsDetail':'报案理赔',
+};
+
+function navigateTo(page, params) {
+  state.currentPage = page;
+  if (page === 'policyManage/insuranceapplicationDetail') state.detailId = params;
+  if (page === 'policyManage/insuranceapplicationEdit') state.editId = params;
+  if (page === 'claimsManage/reportClaimsDetail') state.claimDetailId = params;
+
+  // Update breadcrumb
+  const parent = parentMap[page];
+  const label = breadcrumbMap[page];
+  let bc = '<span style="cursor:pointer;color:#1677ff" onclick="navigateTo(\'policyManage/insuranceapplication\')">首页</span>';
+  if (parent) bc += '<span class="sep">/</span><span>'+parent+'</span>';
+  if (label) bc += '<span class="sep">/</span><span>'+label+'</span>';
+  document.getElementById('breadcrumb').innerHTML = bc;
+
+  renderSidebar();
+  renderPage();
+}
+
+function renderPage() {
+  const content = document.getElementById('appContent');
+  switch(state.currentPage) {
+    case 'policyManage/insuranceapplication': content.innerHTML = renderInsuranceApplication(); break;
+    case 'policyManage/insuranceapplicationDetail': content.innerHTML = renderAppDetail(); break;
+    case 'policyManage/insuranceapplicationEdit': content.innerHTML = renderAppEdit(); break;
+    case 'base/premiumexchangerateallocation': content.innerHTML = renderExchangeRateConfig(); break;
+    case 'base/detailsoftheinsurancerateconfiguration': content.innerHTML = renderRateConfig(); break;
+    case 'claimsManage/reportClaims': content.innerHTML = renderReportClaims(); break;
+    case 'claimsManage/reportClaimsAdd': content.innerHTML = renderClaimAdd(); break;
+    case 'claimsManage/reportClaimsDetail': content.innerHTML = renderClaimDetail(); break;
+    default: content.innerHTML = renderInsuranceApplication();
+  }
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function getStatusTag(status) {
+  const map = { '审批通过':'success','审批拒绝':'error','待审核':'processing','待发起':'default','已确认':'blue','已承保':'success','已批改':'orange','待承保':'default','生效':'success','已启用':'success','已禁用':'error' };
+  const color = map[status] || 'default';
+  return `<span class="tag tag-${color}">${status}</span>`;
+}
+function getAppTypeTag(type) {
+  if (type === '批改申请') return '<span class="tag tag-orange">批改申请</span>';
+  return '<span class="tag tag-blue">新增投保单</span>';
+}
+
+// ============================================================
+// 1. INSURANCE APPLICATION (投保申请表)
+// ============================================================
+function renderInsuranceApplication() {
+  const filtered = state.viewMode === 'latest' ? mockApplications.filter(r => r.isLatest) : [...mockApplications];
+  const allColumns = [
+    {key:'id',title:'序号',w:50,align:'center',fixed:'left'},
+    {key:'businessRefNo',title:'业务参考号',w:180,fixed:'left'},
+    {key:'applicationType',title:'申请类型',w:100},
+    {key:'approvalStatus',title:'审核状态',w:90},
+    {key:'documentStatus',title:'文档状态',w:80},
+    {key:'approvalRemark',title:'审批备注',w:150},
+    {key:'insurancePolicyStatus',title:'保险公司保单状态',w:120},
+    {key:'insuranceCorrectionStatus',title:'保险公司批改状态',w:120},
+    {key:'applicationNo',title:'投保单号',w:150},
+    {key:'applicationTime',title:'投保时间',w:160},
+    {key:'applicantCompany',title:'投保人企业名称',w:200},
+    {key:'goodsNameCN',title:'中文商品名称',w:200},
+    {key:'currencyName',title:'币制中文名称',w:100},
+    {key:'invoiceAmount',title:'发票金额',w:110,align:'right'},
+    {key:'estimatedInsuranceAmount',title:'预计保险金额',w:120,align:'right'},
+    {key:'markupRatio',title:'加成比例',w:140},
+    {key:'estimatedPremium',title:'预计保费',w:100,align:'right'},
+    {key:'actualPremium',title:'实际保费',w:100,align:'right'},
+    {key:'applicantName',title:'投保申请人姓名',w:110},
+    {key:'insuranceCompany',title:'保险公司名称',w:100},
+    {key:'cosOrderStatus',title:'COS订单状态',w:100},
+    {key:'insuranceCategory',title:'投保类别',w:90},
+    {key:'transitPort',title:'途径港',w:180},
+    {key:'carriageType',title:'车厢类型',w:80},
+    {key:'packageType',title:'包装种类',w:200},
+    {key:'quantity',title:'件数',w:60,align:'right'},
+    {key:'insuredCompany',title:'被保人企业名称',w:200},
+    {key:'policyNo',title:'保单单号',w:200},
+    {key:'customerName',title:'客户名称',w:200},
+    {key:'effectiveStatus',title:'生效状态',w:80},
+    {key:'isBackfill',title:'是否回填',w:90},
+    {key:'dataSource',title:'数据来源',w:70},
+    {key:'correctionActualPremium',title:'批改实际保费',w:110,align:'right'},
+  ];
+
+  // Build table header
+  let th = '';
+  allColumns.forEach(c => {
+    let style = `width:${c.w}px`; if(c.align==='right') style+=';text-align:right'; if(c.align==='center') style+=';text-align:center';
+    th += `<th style="${style}">${c.title}</th>`;
+  });
+  th += '<th style="width:180px">操作</th>';
+
+  // Build table rows
+  let tr = '';
+  filtered.forEach((r, i) => {
+    const isRowHistory = !r.isLatest;
+    const rowClass = isRowHistory ? 'row-history' : '';
+    let td = '';
+    allColumns.forEach(c => {
+      let v = r[c.key];
+      if (v === undefined || v === null || v === '') v = '';
+      let style = ''; if(c.align==='right') style='text-align:right;'; if(c.align==='center') style='text-align:center;';
+
+      if (c.key === 'businessRefNo') {
+        let tag = !r.isLatest ? '<span class="tag tag-default" style="margin-left:6px;font-size:11px;opacity:0.6">历史版本</span>' : '';
+        td += `<td style="${style}"><a onclick="navigateTo('policyManage/insuranceapplicationDetail',${r.id})">${v}</a>${tag}</td>`;
+      } else if (c.key === 'applicationType') {
+        td += `<td style="${style}">${getAppTypeTag(v)}</td>`;
+      } else if (c.key === 'approvalStatus') {
+        td += `<td style="${style}">${getStatusTag(v)}</td>`;
+      } else if (['invoiceAmount','estimatedInsuranceAmount'].includes(c.key) && v) {
+        td += `<td style="${style}">${Number(v).toLocaleString()}</td>`;
+      } else if (['estimatedPremium','actualPremium'].includes(c.key) && v) {
+        td += `<td style="${style}">${Number(v).toFixed(2)}</td>`;
+      } else if (c.key === 'correctionActualPremium') {
+        td += `<td style="${style}">${v ? Number(v).toFixed(2) : ''}</td>`;
+      } else {
+        td += `<td style="${style};${!isRowHistory&&(c.key==='goodsNameCN'||c.key==='applicantCompany'||c.key==='insuredCompany')?'max-width:200px;overflow:hidden;text-overflow:ellipsis;':''}">${v}</td>`;
+      }
+    });
+
+    // Action column
+    let actions = '';
+    const s = r.approvalStatus;
+    if (!r.isLatest) {
+      actions = `<button class="btn btn-link btn-sm" onclick="navigateTo('policyManage/insuranceapplicationDetail',${r.id})">查看</button>`;
+    } else {
+      if (s === '待发起' || s === '审批拒绝') {
+        actions += `<button class="btn btn-link btn-sm" onclick="navigateTo('policyManage/insuranceapplicationEdit',${r.id})">编辑</button>`;
+      }
+      if (s === '待发起') {
+        actions += `<button class="btn btn-link danger btn-sm" onclick="showConfirm('确认删除','确定要删除投保单 ${r.businessRefNo} 吗？',()=>showToast('已删除'))">删除</button>`;
+      }
+      actions += `<div class="dropdown" style="display:inline-block">
+        <button class="btn btn-link btn-sm" onclick="toggleDropdown('moreMenu_${r.id}')">更多 ▼</button>
+        <div class="dropdown-menu" id="moreMenu_${r.id}">${getMoreActions(r)}</div>
+      </div>`;
+    }
+    td += `<td style="white-space:nowrap">${actions}</td>`;
+
+    tr += `<tr class="${rowClass}">${td}</tr>`;
+  });
+
+  const searchFields = [
+    {key:'applicationNo',label:'投保单号',type:'input',w:150},
+    {key:'businessRefNo',label:'业务参考号',type:'input',w:150},
+    {key:'applicationTime',label:'投保时间',type:'date',w:240},
+    {key:'approvalStatus',label:'审批状态',type:'select',opts:APPROVAL_STATUSES,w:130},
+    {key:'insurancePolicyStatus',label:'保险公司保单状态',type:'select',opts:INSURANCE_POLICY_STATUSES,w:150},
+    {key:'policyNo',label:'保单单号',type:'input',w:150},
+    {key:'applicantCompany',label:'投保人企业名称',type:'input',w:180},
+    {key:'insuredCompany',label:'被保人企业名称',type:'input',w:180},
+    {key:'goodsNameCN',label:'中文商品名称',type:'input',w:180},
+    {key:'insuranceCompany',label:'保险公司名称',type:'input',w:150},
+    {key:'dataSource',label:'数据来源',type:'select',opts:['fms','cos'],w:100},
+  ];
+
+  return `<div class="card">
+    <div class="card-header">
+      <span>投保申请表</span>
+      <span class="segmented">
+        <button class="seg-option${state.viewMode==='latest'?' active':''}" onclick="state.viewMode='latest';renderPage()">当前有效</button>
+        <button class="seg-option${state.viewMode==='all'?' active':''}" onclick="state.viewMode='all';renderPage()">全部记录</button>
+      </span>
+    </div>
+    <div class="card-body">
+      <!-- Search Fields -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
+        ${searchFields.map(f => {
+          if (f.type === 'input') return `<input class="input" placeholder="${f.label}" style="width:${f.w}px">`;
+          if (f.type === 'select') return `<select class="select" style="width:${f.w}px"><option value="">${f.label}</option>${(f.opts||[]).map(o=>`<option>${o}</option>`).join('')}</select>`;
+          if (f.type === 'date') return `<input class="input" type="date" placeholder="${f.label}" style="width:${f.w}px">`;
+          return '';
+        }).join('')}
+      </div>
+
+      <!-- Toolbar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="btn-group">
+          <button class="btn btn-primary">🔍 搜索</button>
+          <button class="btn">🔄 重置</button>
+          <div class="dropdown">
+            <button class="btn" onclick="toggleDropdown('exportMenu')">📥 导出 ▼</button>
+            <div class="dropdown-menu" id="exportMenu">
+              <button class="item">列表导出</button>
+              <button class="item">平安导出</button>
+              <button class="item">PICC进出口货运</button>
+              <button class="item">PICC国内运输</button>
+            </div>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn${state.searchPanelOpen?' btn-primary':''}" onclick="state.searchPanelOpen=!state.searchPanelOpen;renderPage()">⚙️ 自定义查询</button>
+          <div class="dropdown">
+            <button class="btn" onclick="toggleDropdown('colSettings')">🔧 列设置</button>
+            <div class="dropdown-menu" id="colSettings" style="width:320px;padding:12px">
+              <div style="font-size:13px;font-weight:600;margin-bottom:8px">自定义列显示</div>
+              <div style="font-size:11px;color:#8c8c8c;margin-bottom:12px">☰ 拖拽排序 · 勾选显示</div>
+              <div class="col-setting-list">
+                ${allColumns.map((c,i) => `
+                  <div class="col-setting-row on">
+                    <input type="checkbox" checked id="col_${c.key}">
+                    <label for="col_${c.key}">${c.title}</label>
+                  </div>
+                `).join('')}
+              </div>
+              <button class="btn btn-sm" style="width:100%;margin-top:8px" onclick="showToast('已恢复默认列设置')">恢复默认</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Search Panel -->
+      <div class="search-panel${state.searchPanelOpen?' show':''}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:13px;font-weight:600">自定义查询字段</span>
+          <div class="btn-group">
+            <button class="btn btn-primary btn-sm" onclick="state.searchPanelOpen=false;renderPage()">确定</button>
+            <button class="btn btn-sm">重置默认</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${searchFields.map((f,i) => `
+            <span class="chip chip-${i<3?'on':'off'}" onclick="this.classList.toggle('chip-on');this.classList.toggle('chip-off')">
+              ${i<3?'✓':'+'} ${f.label}
+            </span>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>${th}</tr></thead>
+          <tbody>${tr}</tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <span class="total">共 ${filtered.length} 条</span>
+        <select class="pg-select"><option>10条/页</option><option>20条/页</option><option>50条/页</option></select>
+        <button class="pg-btn active">1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backfill Modal -->
+  ${state.backfillModalOpen ? `
+  <div class="modal-overlay show" onclick="if(event.target===this){state.backfillModalOpen=false;renderPage()}">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">保单信息回填<button class="modal-close" onclick="state.backfillModalOpen=false;renderPage()">✕</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label required">保险公司名称</label><select class="select"><option>CO00056870 - 中国人保</option><option>中国平安</option><option>人保财险</option></select></div>
+        <div class="form-group"><label class="form-label">保单单号</label><input class="input" value="${state.backfillRecord?.policyNo||''}"></div>
+        <div class="form-group"><label class="form-label">实际保费</label><input class="input input-number" value="${state.backfillRecord?.actualPremium||''}"></div>
+        <div class="form-group"><label class="form-label">保单附件</label><div class="file-upload-box">📎 请上传 大小不超过5MB 格式为 doc/docx/pdf/xls/xlsx/jpg/png/jpeg 的文件</div></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="state.backfillModalOpen=false;renderPage()">取消</button>
+        <button class="btn btn-primary" onclick="state.backfillModalOpen=false;renderPage();showToast('回填成功')">确定</button>
+      </div>
+    </div>
+  </div>` : ''}
+
+  <!-- Correction Modal -->
+  ${state.correctionModalOpen ? `
+  <div class="modal-overlay show" onclick="if(event.target===this){state.correctionModalOpen=false;renderPage()}">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">批改信息回填<button class="modal-close" onclick="state.correctionModalOpen=false;renderPage()">✕</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">保险公司批改状态</label><select class="select"><option>已批改</option><option>待批改</option></select></div>
+        <div class="form-group"><label class="form-label">保险公司批改编号</label><input class="input" value="${state.correctionRecord?.correctionCompanyNo||''}"></div>
+        <div class="form-group"><label class="form-label">批改后实际保费</label><input class="input input-number" value="${state.correctionRecord?.correctionActualPremium||''}"></div>
+        <div class="form-group"><label class="form-label">附件</label><div class="file-upload-box">📎 请上传文件</div></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="state.correctionModalOpen=false;renderPage()">取消</button>
+        <button class="btn btn-primary" onclick="state.correctionModalOpen=false;renderPage();showToast('回填成功')">确定</button>
+      </div>
+    </div>
+  </div>` : ''}`;
+}
+
+function getMoreActions(r) {
+  const s = r.approvalStatus;
+  const isCorrection = r.applicationType === '批改申请';
+  let items = '';
+
+  // 编辑
+  if (s === '待发起' || s === '审批拒绝') {
+    items += `<button class="item" onclick="navigateTo('policyManage/insuranceapplicationEdit',${r.id})">✏️ 编辑</button>`;
+  }
+
+  // 删除
+  if (s === '待发起') {
+    items += `<button class="item danger" onclick="showConfirm('确认删除','确定要删除投保单 ${r.businessRefNo} 吗？',()=>showToast('已删除'))">🗑️ 删除</button>`;
+  }
+
+  // 保险费率选择
+  if (s === '待发起') {
+    items += `<button class="item" onclick="showToast('保险费率选择 — 待开发','info')">💰 保险费率选择</button>`;
+  }
+
+  // 发起审批
+  if (s === '待发起' || s === '审批拒绝') {
+    items += `<button class="item" onclick="showToast('已发起审批')">✅ 发起审批</button>`;
+  }
+
+  // 撤销审核
+  if (s === '待审核') {
+    items += `<button class="item" onclick="showToast('已撤销审核，已通知所有审批人')">↩️ 撤销审核</button>`;
+  }
+
+  // 审批通过专属
+  if (s === '审批通过') {
+    if (isCorrection) {
+      items += `<button class="item" onclick="state.correctionRecord=mockApplications.find(a=>a.id===${r.id});state.correctionModalOpen=true;renderPage()">📝 批改信息回填</button>`;
+    } else {
+      items += `<button class="item" onclick="state.backfillRecord=mockApplications.find(a=>a.id===${r.id});state.backfillModalOpen=true;renderPage()">📝 保单信息回填</button>`;
+    }
+    items += `<button class="item" onclick="showToast('缴费账单 — 待开发','info')">💳 缴费账单</button>`;
+    items += `<button class="item" onclick="showToast('发票 — 待开发','info')">🧾 发票</button>`;
+    if (!isCorrection) {
+      items += `<button class="item" onclick="showToast('发起批改 — 待开发','info')">🔄 发起批改</button>`;
+    }
+  }
+
+  return items;
+}
+
+// ============================================================
+// FIELD DEFINITIONS (shared between detail and edit)
+// ============================================================
+const sections = [
+  {title:'基本信息',fields:[{key:'businessRefNo',label:'业务参考号'},{key:'insuranceCategory',label:'投保类别'}]},
+  {title:'投/被保险人信息',fields:[
+    {key:'applicantCompany',label:'投保人企业名称'},{key:'applicantCreditCode',label:'投保人统一社会信用代码'},
+    {key:'applicantContactName',label:'投保人联系人姓名'},{key:'applicantContactPhone',label:'投保人联系电话'},
+    {key:'applicantContactAddress',label:'投保人联系地址',span:2},
+    {key:'customerName',label:'客户名称'},{key:'customerCreditCode',label:'客户统一社会信用代码'},
+    {key:'insuredCompany',label:'被保人企业名称'},{key:'insuredCreditCode',label:'被保人统一社会信用代码'},
+    {key:'insuredContactName',label:'被保人联系人姓名'},{key:'insuredContactPhone',label:'被保人联系电话'},
+    {key:'insuredAddressCountryCode',label:'被保人地址国家标识'},{key:'insuredAddressCountry',label:'被保人地址国家'},
+    {key:'insuredAddressProvince',label:'被保人地址省'},{key:'insuredAddressCity',label:'被保人地址市'},
+    {key:'insuredAddressDistrict',label:'被保人地址区'},{key:'insuredAddress',label:'被保人联系地址',span:2},
+  ]},
+  {title:'运输信息',fields:[
+    {key:'insuranceProductType',label:'承保产品类型'},{key:'transportMode',label:'运输方式'},
+    {key:'invoiceNo',label:'发票号'},{key:'billNo',label:'提运单号'},{key:'vesselName',label:'船名/车号/航班'},
+    {key:'transferPlateNo',label:'转运车牌号'},{key:'isContainer',label:'是否集装箱'},
+    {key:'carriageType',label:'车厢类型'},{key:'specialTransportRequirement',label:'特殊运输要求类型'},
+    {key:'transitPort',label:'途径港'},{key:'departureTime',label:'起运时间'},
+    {key:'originCountryCode',label:'起运国家标识'},{key:'originCountry',label:'起运国家'},
+    {key:'originProvince',label:'起运地地址省'},{key:'originCity',label:'起运地地址市'},
+    {key:'originDistrict',label:'起运地地址区'},{key:'originAddress',label:'起运地地址',span:2},
+    {key:'destCountryCode',label:'目的地国家标识'},{key:'destCountry',label:'目的地国家'},
+    {key:'destProvince',label:'目的地地址省'},{key:'destCity',label:'目的地地址市'},
+    {key:'destDistrict',label:'目的地地址区'},{key:'destAddress',label:'目的地地址',span:2},
+  ]},
+  {title:'货物信息',fields:[
+    {key:'packageType',label:'包装种类'},{key:'goodsNameCN',label:'中文商品名称'},
+    {key:'goodsModel',label:'货物型号'},{key:'goodsNature',label:'货物性质'},
+    {key:'goodsQuantity',label:'货物数量'},{key:'quantity',label:'件数'},{key:'shippingMark',label:'唛头',span:2},
+  ]},
+  {title:'保险信息',fields:[
+    {key:'invoiceAmount',label:'发票金额'},{key:'currencyName',label:'币制中文名称'},
+    {key:'markupRatio',label:'加成比例'},{key:'estimatedInsuranceAmount',label:'预计保险金额'},
+    {key:'estimatedPremium',label:'预计保费(人民币)'},{key:'compensationCountryCode',label:'赔偿偿付地址国家标识'},
+    {key:'compensationCountry',label:'赔偿偿付地址国家'},{key:'compensationProvince',label:'赔偿偿付地址省'},
+    {key:'compensationCity',label:'赔偿偿付地址市'},{key:'compensationDistrict',label:'赔偿偿付地址区/县'},
+    {key:'compensationAddress',label:'赔偿偿付地点'},{key:'remark',label:'备注',span:2},
+    {key:'insuranceFiles',label:'投保附件',span:2},
+  ]},
+  {title:'保单回填信息',fields:[
+    {key:'insuranceCompany',label:'保险公司名称'},{key:'policyNo',label:'保单单号'},
+    {key:'insurancePolicyStatus',label:'保险公司保单状态'},{key:'actualPremium',label:'实际保费'},
+    {key:'policyFiles',label:'保单附件',span:2},
+  ]},
+  {title:'批改信息',fields:[
+    {key:'insuranceCorrectionStatus',label:'保险公司批改状态'},{key:'correctionCompanyNo',label:'批改企业编号'},
+    {key:'correctionActualPremium',label:'批改实际保费'},{key:'correctionFiles',label:'批改企业附件'},
+  ]},
+];
+
+function formatVal(v, key) {
+  if (v === undefined || v === null || v === '') return '-';
+  if (typeof v === 'number') {
+    if (['estimatedPremium','actualPremium','correctionActualPremium'].includes(key)) return v.toFixed(2);
+    return v.toLocaleString();
+  }
+  return String(v);
+}
+
+const statusKeys = ['insurancePolicyStatus','insuranceCorrectionStatus','approvalStatus','documentStatus','effectiveStatus'];
+
+// ============================================================
+// 2. APPLICATION DETAIL (投保单详情)
+// ============================================================
+function renderAppDetail() {
+  const record = mockApplications.find(a => a.id === state.detailId);
+  if (!record) return '<div class="card"><div class="card-header">投保单详情</div><div class="card-body"><p>未找到投保单记录</p></div></div>';
+
+  const canEdit = record.approvalStatus === '待发起' || record.approvalStatus === '审批拒绝';
+  const versions = mockHistoryVersions[record.id] || [];
+  const approvalHistory = mockApprovalHistory[record.id] || [];
+  const changeLogs = mockChangeLogs[record.id] || [];
+  const compareVersion = versions.length > 0 ? versions[versions.length-1] : null;
+
+  // Build sections HTML
+  let sectionsHtml = '';
+  sections.forEach(section => {
+    let fieldsHtml = '';
+    section.fields.forEach(field => {
+      const val = formatVal(record[field.key], field.key);
+      const isStatus = statusKeys.includes(field.key);
+      const spanClass = field.span === 2 ? ' span2' : '';
+      fieldsHtml += `<div class="detail-field${spanClass}">
+        <div class="detail-label">${field.label}</div>
+        <div class="detail-value">${isStatus && val !== '-' ? getStatusTag(val) : val}</div>
+      </div>`;
+    });
+    sectionsHtml += `<div style="margin-bottom:24px">
+      <div class="section-head"><span class="section-head-line"></span><span class="section-head-title">${section.title}</span></div>
+      <div class="card" style="background:#fafafa;border:1px solid #f0f0f0"><div class="card-body"><div class="detail-grid">${fieldsHtml}</div></div></div>
+    </div>`;
+  });
+
+  // History panel
+  let historyHtml = `<div class="card" style="margin-top:24px;border-top:2px solid var(--blue)">
+    <div class="card-header" style="font-weight:600">历史记录</div>
+    <div class="card-body">
+      <div style="display:flex;gap:0;border-bottom:1px solid #f0f0f0;margin-bottom:16px">
+        <div class="tab active" onclick="switchHistoryTab('logs',this)">修改日志<span class="tag tag-default" style="margin-left:4px">${changeLogs.length}</span></div>
+        <div class="tab" onclick="switchHistoryTab('versions',this)">历史版本<span class="tag tag-default" style="margin-left:4px">${versions.length}</span></div>
+        <div class="tab" onclick="switchHistoryTab('approvals',this)">审批历史<span class="tag tag-default" style="margin-left:4px">${approvalHistory.length}</span></div>
+      </div>
+      <div class="tab-content show" id="tabLogs">
+        ${changeLogs.length===0 ? '<div class="empty">暂无修改记录</div>' : `
+        <table class="data-table">
+          <thead><tr><th>时间</th><th>操作人</th><th>字段</th><th>变更</th></tr></thead>
+          <tbody>${changeLogs.map(l => `<tr>
+            <td style="font-size:12px">${l.timestamp}</td><td>${l.user}</td><td>${l.fieldLabel}</td>
+            <td style="font-size:12px"><span style="color:#ff4d4f;text-decoration:line-through">${l.oldValue}</span> <span style="color:#bfbfbf">→</span> <span style="color:#52c41a;font-weight:500">${l.newValue}</span></td>
+          </tr>`).join('')}</tbody>
+        </table>`}
+      </div>
+      <div class="tab-content" id="tabVersions">
+        ${versions.length===0 ? '<div class="empty">暂无历史版本</div>' : versions.map((v,i) => `
+          <div class="timeline-item${i===0?' green':''}">
+            <div style="font-weight:600;margin-bottom:4px">V${v.version} — ${v.label}</div>
+            <div style="font-size:12px;color:#8c8c8c;margin-bottom:8px">${v.timestamp}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="tab-content" id="tabApprovals">
+        ${approvalHistory.length===0 ? '<div class="empty">暂无审批记录</div>' : approvalHistory.map(a => `
+          <div class="timeline-item${a.action==='审批通过'?' green':a.action==='审批拒绝'?' red':''}" style="margin-bottom:16px">
+            <div style="font-weight:600;margin-bottom:2px">${getStatusTag(a.action)} ${a.approver}</div>
+            <div style="font-size:12px;color:#8c8c8c;margin-bottom:4px">${a.timestamp}</div>
+            ${a.comment ? `<div style="font-size:13px;color:#595959">${a.comment}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </div>`;
+
+  return `<div class="card">
+    <div class="card-header">
+      <span>投保单详情 — ${record.businessRefNo}</span>
+      <div class="btn-group">
+        ${compareVersion ? `<button class="btn${state.showChanges?' btn-warning':''}" onclick="state.showChanges=!state.showChanges;renderPage()">🔀 ${state.showChanges?'隐藏变更':'显示变更'}</button>` : ''}
+        ${canEdit ? `<button class="btn btn-primary" onclick="navigateTo('policyManage/insuranceapplicationEdit',${record.id})">✏️ 编辑</button>` : ''}
+        <button class="btn" onclick="navigateTo('policyManage/insuranceapplication')">返回</button>
+      </div>
+    </div>
+    <div class="card-body">${sectionsHtml}${historyHtml}</div>
+  </div>`;
+}
+
+function switchHistoryTab(tabName, el) {
+  const tabs = el.parentElement.querySelectorAll('.tab');
+  tabs.forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['logs','versions','approvals'].forEach(k => {
+    const c = document.getElementById('tab'+k.charAt(0).toUpperCase()+k.slice(1));
+    if (c) c.classList.toggle('show', k === tabName);
+  });
+}
+
+// ============================================================
+// 3. APPLICATION EDIT (编辑投保单)
+// ============================================================
+function renderAppEdit() {
+  const record = mockApplications.find(a => a.id === state.editId);
+  if (!record) return '<div class="card"><div class="card-header">编辑投保单</div><div class="card-body"><p>未找到投保单记录</p></div></div>';
+
+  const editSections = sections.filter(s => s.title !== '保单回填信息' && s.title !== '批改信息');
+  const versions = mockHistoryVersions[record.id] || [];
+  const approvalHistory = mockApprovalHistory[record.id] || [];
+  const changeLogs = mockChangeLogs[record.id] || [];
+
+  let sectionsHtml = '';
+  editSections.forEach(section => {
+    let fieldsHtml = '';
+    section.fields.forEach(field => {
+      const val = record[field.key];
+      const isNumber = ['invoiceAmount','estimatedInsuranceAmount','estimatedPremium','actualPremium','goodsQuantity','quantity'].includes(field.key);
+      const isDate = ['departureTime'].includes(field.key);
+      let input;
+      if (isDate) {
+        input = `<input class="input" type="date" value="${val||''}" style="width:100%">`;
+      } else if (isNumber) {
+        input = `<input class="input input-number" type="number" value="${val||0}" style="width:100%" step="any">`;
+      } else if (field.key === 'remark' || field.key === 'goodsNameCN' || field.key === 'shippingMark') {
+        input = `<textarea class="textarea" rows="2" style="width:100%">${val||''}</textarea>`;
+      } else {
+        input = `<input class="input" value="${val||''}" style="width:100%">`;
+      }
+      const spanClass = field.span === 2 ? ' form-span-2' : '';
+      fieldsHtml += `<div class="form-group${spanClass}"><label class="form-label">${field.label}</label>${input}</div>`;
+    });
+    sectionsHtml += `<div style="margin-bottom:24px">
+      <div class="section-head"><span class="section-head-line"></span><span class="section-head-title">${section.title}</span></div>
+      <div class="card" style="background:#fafafa;border:1px solid #f0f0f0"><div class="card-body"><div class="form-grid">${fieldsHtml}</div></div></div>
+    </div>`;
+  });
+
+  // History panel
+  let historyHtml = `<div class="card" style="margin-top:24px;border-top:2px solid var(--blue)">
+    <div class="card-header" style="font-weight:600">历史记录</div>
+    <div class="card-body">
+      <div style="display:flex;gap:0;border-bottom:1px solid #f0f0f0;margin-bottom:16px">
+        <div class="tab active" onclick="switchHistoryTab('logs',this)">修改日志<span class="tag tag-default" style="margin-left:4px">${changeLogs.length}</span></div>
+        <div class="tab" onclick="switchHistoryTab('versions',this)">历史版本<span class="tag tag-default" style="margin-left:4px">${versions.length}</span></div>
+        <div class="tab" onclick="switchHistoryTab('approvals',this)">审批历史<span class="tag tag-default" style="margin-left:4px">${approvalHistory.length}</span></div>
+      </div>
+      <div class="tab-content show" id="tabLogs">
+        ${changeLogs.length===0 ? '<div class="empty">暂无修改记录</div>' : `
+        <table class="data-table"><thead><tr><th>时间</th><th>操作人</th><th>字段</th><th>变更</th></tr></thead><tbody>${changeLogs.map(l => `<tr><td style="font-size:12px">${l.timestamp}</td><td>${l.user}</td><td>${l.fieldLabel}</td><td style="font-size:12px"><span style="color:#ff4d4f;text-decoration:line-through">${l.oldValue}</span> <span style="color:#bfbfbf">→</span> <span style="color:#52c41a;font-weight:500">${l.newValue}</span></td></tr>`).join('')}</tbody></table>`}
+      </div>
+      <div class="tab-content" id="tabVersions">
+        ${versions.length===0 ? '<div class="empty">暂无历史版本</div>' : versions.map((v,i) => `<div class="timeline-item${i===0?' green':''}"><div style="font-weight:600;margin-bottom:4px">V${v.version} — ${v.label}</div><div style="font-size:12px;color:#8c8c8c">${v.timestamp}</div></div>`).join('')}
+      </div>
+      <div class="tab-content" id="tabApprovals">
+        ${approvalHistory.length===0 ? '<div class="empty">暂无审批记录</div>' : approvalHistory.map(a => `<div class="timeline-item${a.action==='审批通过'?' green':a.action==='审批拒绝'?' red':''}" style="margin-bottom:16px"><div style="font-weight:600;margin-bottom:2px">${getStatusTag(a.action)} ${a.approver}</div><div style="font-size:12px;color:#8c8c8c;margin-bottom:4px">${a.timestamp}</div>${a.comment?`<div style="font-size:13px;color:#595959">${a.comment}</div>`:''}</div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+
+  return `<div class="card">
+    <div class="card-header">
+      <span>编辑投保单 — ${record.businessRefNo}</span>
+      <div class="btn-group">
+        <button class="btn" onclick="navigateTo('policyManage/insuranceapplicationDetail',${record.id})">返回</button>
+      </div>
+    </div>
+    <div class="card-body">
+      ${sectionsHtml}
+      <div style="text-align:center;padding-top:24px;border-top:1px solid #f0f0f0">
+        <div class="btn-group" style="justify-content:center">
+          <button class="btn btn-primary btn-lg" onclick="showToast('保存成功');navigateTo('policyManage/insuranceapplicationDetail',${record.id})">💾 保存</button>
+          <button class="btn btn-lg" onclick="navigateTo('policyManage/insuranceapplicationDetail',${record.id})">取消</button>
+        </div>
+      </div>
+      ${historyHtml}
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// 4. EXCHANGE RATE CONFIG (保费汇率配置)
+// ============================================================
+function renderExchangeRateConfig() {
+  return `<div class="card">
+    <div class="card-header">保费汇率配置</div>
+    <div class="card-body">
+      <div class="form-inline">
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">保险公司</label><select class="select" style="width:200px"><option value="">请选择保险公司</option>${INSURANCE_COMPANIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">生效日期</label><input class="input" type="date" style="width:160px"> — <input class="input" type="date" style="width:160px"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary">🔍 搜索</button>
+          <button class="btn">🔄 重置</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="state.exchangeRateEdit=null;state.exchangeRateModal=true;renderPage()">➕ 新增</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th style="width:60px;text-align:center">序号</th><th>保险公司</th><th style="width:100px">汇率</th><th>生效日期</th><th>失效日期</th><th>币制</th><th>创建人</th><th>创建时间</th><th style="width:80px">操作</th></tr></thead>
+          <tbody>${mockExchangeRates.map(r => `<tr>
+            <td style="text-align:center">${r.id}</td><td>${r.insuranceCompany}</td><td>${r.exchangeRate.toFixed(6)}</td><td>${r.effectiveDate}</td><td>${r.expiryDate}</td><td>${r.currency}</td><td>${r.creator}</td><td>${r.createTime}</td>
+            <td><button class="btn btn-primary btn-sm" onclick="state.exchangeRateEdit=mockExchangeRates[${r.id-1}];state.exchangeRateModal=true;renderPage()">编辑</button></td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+      <div class="pagination"><span class="total">共 ${mockExchangeRates.length} 条</span></div>
+    </div>
+  </div>
+  ${state.exchangeRateModal ? renderExchangeRateModal() : ''}`;
+}
+
+function renderExchangeRateModal() {
+  const r = state.exchangeRateEdit;
+  return `<div class="modal-overlay show" onclick="if(event.target===this){state.exchangeRateModal=false;renderPage()}">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">${r?'修改汇率配置':'新增汇率配置'}<button class="modal-close" onclick="state.exchangeRateModal=false;renderPage()">✕</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label required">保险公司</label><select class="select">${INSURANCE_COMPANIES.map(c=>`<option${r&&r.insuranceCompany===c?' selected':''}>${c}</option>`).join('')}</select></div>
+        <div class="form-group"><label class="form-label required">生效日期</label><input class="input" type="date" value="${r?r.effectiveDate:''}"></div>
+        <div class="form-group"><label class="form-label required">失效日期</label><input class="input" type="date" value="${r?r.expiryDate:''}"></div>
+        <div class="form-group"><label class="form-label required">币制</label><select class="select">${CURRENCIES.map(c=>`<option${r&&r.currency===c?' selected':''}>${c}</option>`).join('')}</select></div>
+        <div class="form-group"><label class="form-label required">汇率</label><input class="input input-number" type="number" step="0.000001" value="${r?r.exchangeRate:''}"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="state.exchangeRateModal=false;renderPage()">取消</button>
+        <button class="btn btn-primary" onclick="state.exchangeRateModal=false;renderPage();showToast(r?'修改成功':'新增成功')">确定</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// 5. RATE CONFIG (保费费率配置)
+// ============================================================
+function renderRateConfig() {
+  return `<div class="card">
+    <div class="card-header">保费费率配置</div>
+    <div class="card-body">
+      <div class="form-inline">
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">保险公司</label><select class="select" style="width:200px"><option value="">请选择保险公司</option>${INSURANCE_COMPANIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">生效日期</label><input class="input" type="date" style="width:160px"> — <input class="input" type="date" style="width:160px"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary">🔍 搜索</button>
+          <button class="btn">🔄 重置</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="state.rateEdit=null;state.rateModal=true;renderPage()">➕ 新增</button>
+          <button class="btn" onclick="showToast('已批量启用')">批量启用</button>
+          <button class="btn" onclick="showToast('已批量禁用')">批量禁用</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th style="width:60px;text-align:center">序号</th><th>保险公司</th><th style="width:100px">费率</th><th>生效日期</th><th>失效日期</th><th>货物类型</th><th style="width:80px">状态</th><th>创建人</th><th>创建时间</th><th style="width:80px">操作</th></tr></thead>
+          <tbody>${mockInsuranceRates.map(r => `<tr>
+            <td style="text-align:center">${r.id}</td><td>${r.insuranceCompany}</td><td>${r.rate.toFixed(6)}</td><td>${r.effectiveDate}</td><td>${r.expiryDate}</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis">${r.cargoType}</td>
+            <td><span style="color:${r.status==='启用'?'#52c41a':'#ff4d4f'}">${r.status}</span></td><td>${r.creator}</td><td>${r.createTime}</td>
+            <td><button class="btn btn-primary btn-sm" onclick="state.rateEdit=mockInsuranceRates[${r.id-1}];state.rateModal=true;renderPage()">编辑</button></td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+      <div class="pagination"><span class="total">共 ${mockInsuranceRates.length} 条</span></div>
+    </div>
+  </div>
+  ${state.rateModal ? renderRateModal() : ''}`;
+}
+
+function renderRateModal() {
+  const r = state.rateEdit;
+  return `<div class="modal-overlay show" onclick="if(event.target===this){state.rateModal=false;renderPage()}">
+    <div class="modal wide" onclick="event.stopPropagation()">
+      <div class="modal-header">${r?'修改保费费率配置':'新增保费费率配置'}<button class="modal-close" onclick="state.rateModal=false;renderPage()">✕</button></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-group"><label class="form-label required">保险公司</label><select class="select">${INSURANCE_COMPANIES.map(c=>`<option${r&&r.insuranceCompany===c?' selected':''}>${c}</option>`).join('')}</select></div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label required">生效日期</label><input class="input" type="date" value="${r?r.effectiveDate:''}"></div><div class="form-group"><label class="form-label required">失效日期</label><input class="input" type="date" value="${r?r.expiryDate:''}"></div></div>
+        <div class="form-group"><label class="form-label required">货物类型</label><input class="input" value="${r?r.cargoType:''}"></div>
+        <div class="form-row"><div class="form-group"><label class="form-label required">费率</label><input class="input input-number" type="number" step="0.00001" value="${r?r.rate:''}"></div><div class="form-group"><label class="form-label">货值(RMB)</label><input class="input input-number" type="number" value="${r&&r.cargoValueRMB?r.cargoValueRMB:''}"></div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">协议号</label><input class="input" value="${r?r.agreementNo||'':''}"></div><div class="form-group"><label class="form-label">最低收费</label><input class="input input-number" type="number" value="${r&&r.minCharge?r.minCharge:''}"></div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">包装类型</label><select class="select"><option value="">请选择</option>${PACKAGE_TYPES.map(p=>`<option>${p}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">新旧类型</label><select class="select"><option value="">请选择</option>${OLD_NEW_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div></div>
+        <div class="form-group"><label class="form-label">备注</label><textarea class="textarea" rows="3">${r?r.remark||'':''}</textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="state.rateModal=false;renderPage()">取消</button>
+        <button class="btn btn-primary" onclick="state.rateModal=false;renderPage();showToast(r?'修改成功':'新增成功')">确定</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// 6. REPORT CLAIMS (报案理赔管理)
+// ============================================================
+function renderReportClaims() {
+  return `<div class="card">
+    <div class="card-header">报案理赔管理</div>
+    <div class="card-body">
+      <div class="form-inline">
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">报案时间</label><input class="input" type="date" style="width:160px"> — <input class="input" type="date" style="width:160px"></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">报案编号</label><input class="input" style="width:160px"></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">报案状态</label><select class="select" style="width:140px"><option value="">请选择</option>${CLAIM_STATUSES.map(s=>`<option>${s}</option>`).join('')}</select></div>
+        <div class="btn-group">
+          <button class="btn btn-primary">🔍 搜索</button>
+          <button class="btn">🔄 重置</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="navigateTo('claimsManage/reportClaimsAdd')">➕ 新增</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th style="width:60px;text-align:center">序号</th><th style="width:150px">报案编号</th><th style="width:100px">报案状态</th><th style="width:170px">报案时间</th><th style="width:120px">投保申请人姓名</th><th style="width:220px">保单单号</th><th style="width:100px">保险公司名称</th><th style="width:220px">被保险人企业名称</th><th style="width:130px">保险公司理赔结果</th><th style="width:220px">操作</th></tr></thead>
+          <tbody>${mockClaims.map(r => {
+            const colorMap = {'审批通过':'#52c41a','审批拒绝':'#ff4d4f','已确认':'#1677ff'};
+            return `<tr>
+              <td style="text-align:center">${r.id}</td><td>${r.reportNo}</td>
+              <td><span style="color:${colorMap[r.reportStatus]||'#333'}">${r.reportStatus}</span></td>
+              <td>${r.reportTime}</td><td>${r.applicantName}</td><td>${r.policyNo}</td><td>${r.insuranceCompany}</td>
+              <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${r.insuredCompany}</td><td>${r.claimResult}</td>
+              <td style="white-space:nowrap">
+                <button class="btn btn-link btn-sm">编辑</button>
+                <button class="btn btn-link btn-sm" onclick="navigateTo('claimsManage/reportClaimsDetail',${r.id})">查看</button>
+                <button class="btn btn-link danger btn-sm">删除</button>
+                <button class="btn btn-link btn-sm">发起审批</button>
+                ${r.reportStatus==='审批通过'?`<button class="btn btn-link btn-sm" onclick="state.claimConfirmRecord=mockClaims.find(c=>c.id===${r.id});state.claimConfirmModal=true;renderPage()">理赔确认</button>`:''}
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+      <div class="pagination"><span class="total">共 ${mockClaims.length} 条</span></div>
+    </div>
+  </div>
+  ${state.claimConfirmModal ? renderClaimConfirmModal() : ''}`;
+}
+
+function renderClaimConfirmModal() {
+  return `<div class="modal-overlay show" onclick="if(event.target===this){state.claimConfirmModal=false;renderPage()}">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">理赔确认<button class="modal-close" onclick="state.claimConfirmModal=false;renderPage()">✕</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label required">保险公司理赔结果</label><select class="select"><option>赔付</option><option>拒赔</option><option>部分赔付</option></select></div>
+        <div class="form-group"><label class="form-label">保险公司理赔金额</label><input class="input input-number" type="number" step="0.01"></div>
+        <div class="form-group"><label class="form-label">上传附件</label><div class="file-upload-box">📎 选择文件</div><div style="color:#999;font-size:12px;margin-top:4px">支持 pdf/word/excel/zip/jpg/png，单文件 ≤5MB</div></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="state.claimConfirmModal=false;renderPage()">取消</button>
+        <button class="btn btn-primary" onclick="state.claimConfirmModal=false;renderPage();showToast('理赔确认成功')">确定</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// 7. CLAIM ADD (新增报案)
+// ============================================================
+function renderClaimAdd() {
+  return `<div class="card">
+    <div class="card-header">
+      <span>新增报案</span>
+      <button class="btn" onclick="navigateTo('claimsManage/reportClaims')">返回</button>
+    </div>
+    <div class="card-body">
+      <!-- 保单信息 -->
+      <div class="section-head"><span class="section-head-line"></span><span class="section-head-title">保单信息</span></div>
+      <div class="card" style="background:#fafafa;border:1px solid #f0f0f0;margin-bottom:24px"><div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">业务参考号</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">投保申请人部门</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">保单单号</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">保险公司名称</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">提运单号</label><input class="input"></div>
+        </div>
+      </div></div>
+
+      <!-- 客户信息 -->
+      <div class="section-head"><span class="section-head-line"></span><span class="section-head-title">客户信息</span></div>
+      <div class="card" style="background:#fafafa;border:1px solid #f0f0f0;margin-bottom:24px"><div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">被保人企业名称</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">起运地国家标识</label><select class="select">${COUNTRIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">起运地国家</label><select class="select">${COUNTRIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">起运地省</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">起运地市</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">起运地区/县</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">起运地详细地址</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">收货方名称</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">目的地国家标识</label><select class="select">${COUNTRIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">目的地国家</label><select class="select">${COUNTRIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">目的地省</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">目的地市</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">目的地区/县</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">目的地详细地址</label><input class="input"></div>
+        </div>
+      </div></div>
+
+      <!-- 货物运输信息 -->
+      <div class="section-head"><span class="section-head-line"></span><span class="section-head-title">货物运输信息</span></div>
+      <div class="card" style="background:#fafafa;border:1px solid #f0f0f0;margin-bottom:24px"><div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label required">中文商品名称</label><input class="input"></div>
+          <div class="form-group"><label class="form-label">货物数量</label><input class="input input-number" type="number" min="0" style="width:100%"></div>
+          <div class="form-group"><label class="form-label">包装种类</label><select class="select"><option value="">由选择关联带出</option>${PACKAGE_TYPES.map(p=>`<option>${p}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">预计货损金额</label><input class="input input-number" type="number" step="0.01" min="0" style="width:100%"></div>
+          <div class="form-group"><label class="form-label">货损金额币种</label><select class="select"><option>人民币</option><option>美元</option></select></div>
+          <div class="form-group"><label class="form-label required">具体出险时间</label><input class="input" type="datetime-local" style="width:100%"></div>
+          <div class="form-group"><label class="form-label">出险地国家标识</label><select class="select">${COUNTRIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">出险地国家</label><select class="select">${COUNTRIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">出险地省</label><select class="select"></select></div>
+          <div class="form-group"><label class="form-label">出险地市</label><select class="select"></select></div>
+          <div class="form-group"><label class="form-label">出险地区/县</label><select class="select"></select></div>
+          <div class="form-group"><label class="form-label">出险地详细地址</label><input class="input"></div>
+        </div>
+        <div class="form-group"><label class="form-label">出险经过与原因</label><textarea class="textarea" rows="4" maxlength="500"></textarea><div style="font-size:12px;color:#999;text-align:right">0/500</div></div>
+        <div class="form-group"><label class="form-label">出险附件</label><div class="file-upload-box">📎 点击上传</div></div>
+      </div></div>
+
+      <div style="text-align:center;padding-top:24px;border-top:1px solid #f0f0f0">
+        <div class="btn-group" style="justify-content:center">
+          <button class="btn btn-primary btn-lg" onclick="navigateTo('claimsManage/reportClaims');showToast('报案提交成功')">提 交</button>
+          <button class="btn btn-lg" onclick="navigateTo('claimsManage/reportClaims')">取 消</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// 8. CLAIM DETAIL (报案详情)
+// ============================================================
+function renderClaimDetail() {
+  const record = mockClaims.find(c => c.id === state.claimDetailId);
+  if (!record) return '<div class="card"><div class="card-header">报案详情</div><div class="card-body"><p>未找到报案记录</p></div></div>';
+
+  const colorMap = {'审批通过':'success','审批拒绝':'error','已确认':'blue','待审批':'default'};
+  return `<div class="card">
+    <div class="card-header">
+      <span>报案详情 — ${record.reportNo}</span>
+      <div class="btn-group">
+        <button class="btn" onclick="navigateTo('claimsManage/reportClaims')">返回列表</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="section-head"><span class="section-head-line"></span><span class="section-head-title">基本信息</span></div>
+      <table class="desc-table" style="margin-bottom:24px">
+        <tr><th>报案编号</th><td>${record.reportNo}</td><th>报案状态</th><td>${getStatusTag(record.reportStatus)}</td><th>报案时间</th><td>${record.reportTime}</td></tr>
+        <tr><th>投保申请人姓名</th><td>${record.applicantName}</td><th>保单单号</th><td>${record.policyNo}</td><th>保险公司名称</th><td>${record.insuranceCompany}</td></tr>
+        <tr><th>被保险人企业名称</th><td colspan="5">${record.insuredCompany}</td></tr>
+        <tr><th>保险公司理赔结果</th><td>${record.claimResult}</td><th>保险公司理赔金额</th><td colspan="3">${record.claimAmount ? '¥'+record.claimAmount.toLocaleString() : '-'}</td></tr>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderSidebar();
+renderPage();
+
+// Close user dropdown on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.user-menu')) {
+    document.getElementById('userDropdown').classList.remove('show');
+  }
+});
+</script>
+</body>
+</html>
