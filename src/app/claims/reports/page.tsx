@@ -44,7 +44,7 @@ export default function ReportClaimsPage() {
   const statusColor: Record<string, string> = { '审批通过': '#52c41a', '审批拒绝': '#ff4d4f', '已确认': '#1677ff', '待审批': '#333' };
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between"><h1 className="text-lg font-bold">报案理赔管理</h1></div>
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">查询条件</CardTitle></CardHeader>

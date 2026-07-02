@@ -187,7 +187,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* 主内容 */}
         <main className="flex-1 overflow-auto bg-page">
-          <div className="p-6">{children}</div>
+          <div className="p-4">{children}</div>
         </main>
       </div>
     </div>

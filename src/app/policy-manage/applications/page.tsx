@@ -270,7 +270,7 @@ export default function InsuranceApplicationPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold">投保申请表</h1>
       </div>
@@ -365,7 +365,7 @@ export default function InsuranceApplicationPage() {
                       style={{ width: allColumns.find((x) => x.key === c.key)?.width || 'auto', textAlign: allColumns.find((x) => x.key === c.key)?.align || 'left' }}
                     >{columnLabelMap[c.key]}</TableHead>
                   ))}
-                  <TableHead className="w-[80px] text-center sticky right-0 bg-background">操作</TableHead>
+                  <TableHead className="w-[80px] text-center sticky right-0 z-20 bg-[var(--bg-subtle)] shadow-[-4px_0_8px_rgba(0,0,0,0.06)]">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -376,7 +376,7 @@ export default function InsuranceApplicationPage() {
                         {renderCell(app, c.key)}
                       </TableCell>
                     ))}
-                    <TableCell className="sticky right-0 bg-background">
+                    <TableCell className="sticky right-0 z-10 bg-[var(--bg-surface)] shadow-[-4px_0_8px_rgba(0,0,0,0.06)]">
                       {!app.isLatest ? (
                         <Button variant="link" size="sm" onClick={() => router.push(`/policy-manage/applications/${app.id}`)}>查看</Button>
                       ) : (

@@ -52,7 +52,7 @@ export default function ExchangeRateConfigPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between"><h1 className="text-lg font-bold">保费汇率配置</h1></div>
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">查询条件</CardTitle></CardHeader>
