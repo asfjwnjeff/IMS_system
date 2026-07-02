@@ -1,0 +1,225 @@
+/**
+ * 数据库种子数据 — 从 IMS Mock 数据迁移
+ * 启动时自动建表 + 插入示例数据（INSERT OR IGNORE 保证幂等）
+ */
+import { getDb, saveDb } from './index';
+import { sql } from 'drizzle-orm';
+import type { InsuranceApplication, ClaimReport, ExchangeRate, InsuranceRate } from '@/lib/types';
+
+export async function autoMigrate() {
+  const db = await getDb();
+
+  // 建表 DDL
+  db.run(sql`
+    CREATE TABLE IF NOT EXISTS insurance_applications (
+      id TEXT PRIMARY KEY, business_ref_no TEXT NOT NULL, insurance_category TEXT,
+      applicant_company TEXT, customer_name TEXT, insured_company TEXT,
+      approval_status TEXT DEFAULT '审批中', application_type TEXT,
+      version INTEGER DEFAULT 1, is_latest INTEGER DEFAULT 1, previous_id TEXT,
+      document_status TEXT, approval_remark TEXT, application_no TEXT,
+      application_time TEXT, applicant_name TEXT, cos_order_status TEXT,
+      effective_status TEXT, is_backfill TEXT, data_source TEXT,
+      applicant_info TEXT, transport_info TEXT, cargo_info TEXT,
+      insurance_info TEXT, backfill_info TEXT, correction_info TEXT,
+      created_at TEXT, updated_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS claim_reports (
+      id TEXT PRIMARY KEY, report_no TEXT NOT NULL, report_status TEXT DEFAULT '待审批',
+      report_time TEXT, applicant_name TEXT, policy_no TEXT,
+      insurance_company TEXT, insured_company TEXT, claim_result TEXT,
+      claim_detail TEXT, created_at TEXT, updated_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS exchange_rates (
+      id TEXT PRIMARY KEY, insurance_company TEXT NOT NULL, exchange_rate REAL NOT NULL,
+      effective_date TEXT, expiry_date TEXT, currency TEXT, creator TEXT, create_time TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS insurance_rates (
+      id TEXT PRIMARY KEY, insurance_company TEXT NOT NULL, rate REAL NOT NULL,
+      effective_date TEXT, expiry_date TEXT, cargo_type TEXT, status TEXT DEFAULT '启用',
+      cargo_value_rmb REAL, agreement_no TEXT, min_charge REAL, package_type TEXT,
+      old_new_type TEXT, remark TEXT, creator TEXT, create_time TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS history_versions (
+      id TEXT PRIMARY KEY, application_id TEXT NOT NULL, version INTEGER NOT NULL,
+      timestamp TEXT NOT NULL, label TEXT NOT NULL, data TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS approval_history (
+      id TEXT PRIMARY KEY, application_id TEXT NOT NULL, timestamp TEXT NOT NULL,
+      approver TEXT NOT NULL, action TEXT NOT NULL, comment TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS change_logs (
+      id TEXT PRIMARY KEY, application_id TEXT NOT NULL, timestamp TEXT NOT NULL,
+      user TEXT NOT NULL, field_label TEXT NOT NULL, old_value TEXT, new_value TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS column_configs (
+      id TEXT PRIMARY KEY, config_key TEXT NOT NULL,
+      config_data TEXT NOT NULL, updated_at TEXT
+    );
+  `);
+
+  // 种子数据插入
+  await seedExchangeRates(db);
+  await seedInsuranceRates(db);
+  await seedApplications(db);
+  await seedClaims(db);
+
+  saveDb();
+  console.log('[IMS DB] Schema migrated & seed data loaded');
+}
+
+async function seedExchangeRates(db: ReturnType<typeof getDb> extends Promise<infer T> ? T : never) {
+  const rates = [
+    { id: 'exr-1', insuranceCompany: '中国人保', exchangeRate: 7.2436, effectiveDate: '2026-06-01', expiryDate: '2026-12-31', currency: '美元', creator: '管理员', createTime: '2026-06-01 09:00:00' },
+    { id: 'exr-2', insuranceCompany: '中国人保', exchangeRate: 0.0521, effectiveDate: '2026-06-01', expiryDate: '2026-12-31', currency: '日元', creator: '管理员', createTime: '2026-06-01 09:00:00' },
+    { id: 'exr-3', insuranceCompany: '中国人保', exchangeRate: 0.9293, effectiveDate: '2026-06-01', expiryDate: '2026-12-31', currency: '欧元', creator: '管理员', createTime: '2026-06-01 09:00:00' },
+    { id: 'exr-4', insuranceCompany: '中国平安', exchangeRate: 7.2512, effectiveDate: '2026-06-15', expiryDate: '2026-12-31', currency: '美元', creator: '管理员', createTime: '2026-06-15 10:00:00' },
+    { id: 'exr-5', insuranceCompany: '中国平安', exchangeRate: 0.0515, effectiveDate: '2026-06-15', expiryDate: '2026-12-31', currency: '日元', creator: '管理员', createTime: '2026-06-15 10:00:00' },
+  ];
+
+  for (const r of rates) {
+    db.run(sql`INSERT OR IGNORE INTO exchange_rates VALUES (
+      ${r.id}, ${r.insuranceCompany}, ${r.exchangeRate}, ${r.effectiveDate},
+      ${r.expiryDate}, ${r.currency}, ${r.creator}, ${r.createTime}
+    )`);
+  }
+}
+
+async function seedInsuranceRates(db: ReturnType<typeof getDb> extends Promise<infer T> ? T : never) {
+  const rates = [
+    { id: 'insr-1', insuranceCompany: '中国人保', rate: 0.0026, effectiveDate: '2026-06-01', expiryDate: '2026-12-31', cargoType: '电子产品', status: '启用', cargoValueRMB: 1000000, agreementNo: 'AGR-2026-001', minCharge: 50, packageType: '纸制或纤维板制盒/箱', oldNewType: '新货', remark: '', creator: '管理员', createTime: '2026-06-01 09:00:00' },
+    { id: 'insr-2', insuranceCompany: '中国人保', rate: 0.0035, effectiveDate: '2026-06-01', expiryDate: '2026-12-31', cargoType: '机械设备', status: '启用', cargoValueRMB: 500000, agreementNo: 'AGR-2026-002', minCharge: 100, packageType: '天然木托', oldNewType: '新货', remark: '', creator: '管理员', createTime: '2026-06-01 09:00:00' },
+    { id: 'insr-3', insuranceCompany: '中国平安', rate: 0.0024, effectiveDate: '2026-07-01', expiryDate: '2026-12-31', cargoType: '电子产品', status: '启用', cargoValueRMB: 800000, agreementNo: 'AGR-2026-003', minCharge: 40, packageType: '普通集装箱', oldNewType: '新货', remark: '', creator: '管理员', createTime: '2026-06-15 10:00:00' },
+  ];
+
+  for (const r of rates) {
+    db.run(sql`INSERT OR IGNORE INTO insurance_rates VALUES (
+      ${r.id}, ${r.insuranceCompany}, ${r.rate}, ${r.effectiveDate},
+      ${r.expiryDate}, ${r.cargoType}, ${r.status}, ${r.cargoValueRMB},
+      ${r.agreementNo}, ${r.minCharge}, ${r.packageType}, ${r.oldNewType},
+      ${r.remark}, ${r.creator}, ${r.createTime}
+    )`);
+  }
+}
+
+async function seedApplications(db: ReturnType<typeof getDb> extends Promise<infer T> ? T : never) {
+  const apps = [
+    {
+      id: 'app-1', businessRefNo: 'PVG-AI26060171', insuranceCategory: '非保入库',
+      applicantCompany: '上海泓明国际货运有限公司', customerName: '深圳精智达半导体技术有限公司',
+      insuredCompany: '深圳精智达半导体技术有限公司', approvalStatus: '审批通过', applicationType: '批改申请',
+      version: 2, isLatest: 1, previousId: 'app-4',
+      documentStatus: '', approvalRemark: '批改内容已核实，保费调整无误', applicationNo: 'TB202606250001',
+      applicationTime: '2026-06-25 09:40:31', applicantName: '谭泽宇', cosOrderStatus: '',
+      effectiveStatus: '生效', isBackfill: '已经回填', dataSource: 'fms',
+      applicantInfo: JSON.stringify({ applicantCompany: '上海泓明国际货运有限公司', applicantCreditCode: '91310115MA1H2B3C4D', applicantContactName: '谭泽宇', applicantContactPhone: '021-58345678', applicantContactAddress: '上海市浦东新区张江高科技园区碧波路690号', customerName: '深圳精智达半导体技术有限公司', customerCreditCode: '91440300MA5D6E7F8G', insuredCompany: '深圳精智达半导体技术有限公司', insuredCreditCode: '91440300MA5D6E7F8G', insuredContactName: '王明辉', insuredContactPhone: '0755-86543210', insuredAddressCountryCode: '国内(Domestic)', insuredAddressCountry: '中国', insuredAddressProvince: '广东省', insuredAddressCity: '深圳市', insuredAddressDistrict: '南山区', insuredAddress: '深圳市南山区粤海街道科苑路15号' }),
+      transportInfo: JSON.stringify({ transitPort: '广州白云国际机场（中国）', carriageType: '其他', insuranceProductType: '进口运输险', transportMode: '航空运输', invoiceNo: 'INV-2026-0625-001', billNo: '99993756972', vesselName: 'CA1234', transferPlateNo: '', isContainer: '否', specialTransportRequirement: '无', departureTime: '2026-06-26', originCountryCode: '国际(International)', originCountry: '美国', originProvince: '加利福尼亚州', originCity: '洛杉矶', originDistrict: '', originAddress: 'LOS ANGELES, CA 90045', destCountryCode: '国内(Domestic)', destCountry: '中国', destProvince: '上海市', destCity: '上海市', destDistrict: '浦东新区', destAddress: '上海浦东国际机场海关监管仓库' }),
+      cargoInfo: JSON.stringify({ packageType: '木制或竹藤等植物性材料制盒/箱', goodsNameCN: '升降搬运装置等(详见COMMERCIALINVOICE)', goodsModel: 'HX-2000', goodsNature: '新货', goodsQuantity: 100, quantity: 1, shippingMark: 'N/M' }),
+      insuranceInfo: JSON.stringify({ invoiceAmount: 56035, currencyName: '美元', markupRatio: '发票金额原值110%', estimatedInsuranceAmount: 61638.5, estimatedPremium: 168.09, compensationCountryCode: '国内(Domestic)', compensationCountry: '中国', compensationProvince: '广东省', compensationCity: '深圳市', compensationDistrict: '南山区', compensationAddress: '深圳市南山区粤海街道科苑路15号', remark: '', insuranceFiles: [] }),
+      backfillInfo: JSON.stringify({ insuranceCompany: '中国人保', policyNo: 'PYII2026310100000023', insurancePolicyStatus: '已承保', actualPremium: 168.12, policyFiles: [] }),
+      correctionInfo: JSON.stringify({ insuranceCorrectionStatus: '已批改', correctionCompanyNo: 'EYII202631010000000599', correctionActualPremium: 168.12, correctionFiles: [] }),
+      createdAt: '2026-06-20T10:15:00.000Z', updatedAt: '2026-06-25T09:40:31.000Z',
+    },
+    {
+      id: 'app-4', businessRefNo: 'PVG-AI26060171', insuranceCategory: '非保入库',
+      applicantCompany: '上海泓明国际货运有限公司', customerName: '深圳精智达半导体技术有限公司',
+      insuredCompany: '深圳精智达半导体技术有限公司', approvalStatus: '审批通过', applicationType: '新增投保单',
+      version: 1, isLatest: 0, previousId: null,
+      documentStatus: '', approvalRemark: '材料齐全，同意承保', applicationNo: 'TB202606200005',
+      applicationTime: '2026-06-20 10:15:00', applicantName: '谭泽宇', cosOrderStatus: '',
+      effectiveStatus: '生效', isBackfill: '已经回填', dataSource: 'fms',
+      applicantInfo: JSON.stringify({ applicantCompany: '上海泓明国际货运有限公司', applicantCreditCode: '91310115MA1H2B3C4D', applicantContactName: '谭泽宇', applicantContactPhone: '021-58345678', applicantContactAddress: '上海市浦东新区张江高科技园区碧波路690号', customerName: '深圳精智达半导体技术有限公司', customerCreditCode: '91440300MA5D6E7F8G', insuredCompany: '深圳精智达半导体技术有限公司', insuredCreditCode: '91440300MA5D6E7F8G', insuredContactName: '王明辉', insuredContactPhone: '0755-86543210', insuredAddressCountryCode: '国内(Domestic)', insuredAddressCountry: '中国', insuredAddressProvince: '广东省', insuredAddressCity: '深圳市', insuredAddressDistrict: '南山区', insuredAddress: '深圳市南山区粤海街道科苑路15号' }),
+      transportInfo: JSON.stringify({ transitPort: '上海浦东国际机场（中国）', carriageType: '普通集装箱', insuranceProductType: '进口运输险', transportMode: '航空运输', invoiceNo: 'INV-2026-0620-001', billNo: '99993756970', vesselName: 'CA1230', transferPlateNo: '', isContainer: '是', specialTransportRequirement: '无', departureTime: '2026-06-21', originCountryCode: '国际(International)', originCountry: '美国', originProvince: '加利福尼亚州', originCity: '洛杉矶', originDistrict: '', originAddress: 'LOS ANGELES, CA 90045', destCountryCode: '国内(Domestic)', destCountry: '中国', destProvince: '上海市', destCity: '上海市', destDistrict: '浦东新区', destAddress: '上海浦东国际机场海关监管仓库' }),
+      cargoInfo: JSON.stringify({ packageType: '纸制或纤维板制盒/箱', goodsNameCN: '升降搬运装置等', goodsModel: 'HX-2000', goodsNature: '新货', goodsQuantity: 100, quantity: 2, shippingMark: 'N/M' }),
+      insuranceInfo: JSON.stringify({ invoiceAmount: 56000, currencyName: '美元', markupRatio: '发票金额原值100%', estimatedInsuranceAmount: 61600, estimatedPremium: 154, compensationCountryCode: '国内(Domestic)', compensationCountry: '中国', compensationProvince: '广东省', compensationCity: '深圳市', compensationDistrict: '南山区', compensationAddress: '深圳市南山区粤海街道科苑路15号', remark: '', insuranceFiles: [] }),
+      backfillInfo: JSON.stringify({ insuranceCompany: '中国平安', policyNo: 'PYII2026310100000018', insurancePolicyStatus: '待承保', actualPremium: 154, policyFiles: [] }),
+      correctionInfo: JSON.stringify({ insuranceCorrectionStatus: '', correctionCompanyNo: '', correctionActualPremium: 0, correctionFiles: [] }),
+      createdAt: '2026-06-20T10:15:00.000Z', updatedAt: '2026-06-20T10:15:00.000Z',
+    },
+    {
+      id: 'app-2', businessRefNo: 'PAC-INTEL26060002Y', insuranceCategory: '非保入库',
+      applicantCompany: '上海泓明供应链有限公司', customerName: '英特尔贸易（上海）有限公司',
+      insuredCompany: '英特尔贸易（上海）有限公司', approvalStatus: '审批通过', applicationType: '新增投保单',
+      version: 1, isLatest: 1, previousId: null,
+      documentStatus: '', approvalRemark: '', applicationNo: 'TB202606260003',
+      applicationTime: '2026-06-26 11:38:33', applicantName: '费斌', cosOrderStatus: '订单完成',
+      effectiveStatus: '生效', isBackfill: '已经回填', dataSource: 'cos',
+      applicantInfo: JSON.stringify({ applicantCompany: '上海泓明供应链有限公司', applicantCreditCode: '91310115MA1H8D9E0F', applicantContactName: '费斌', applicantContactPhone: '021-50497890', applicantContactAddress: '上海市浦东新区外高桥保税区富特西一路289号', customerName: '英特尔贸易（上海）有限公司', customerCreditCode: '91310000MA1G5H6I7J', insuredCompany: '英特尔贸易（上海）有限公司', insuredCreditCode: '91310000MA1G5H6I7J', insuredContactName: '李经理', insuredContactPhone: '021-50491234', insuredAddressCountryCode: '国内(Domestic)', insuredAddressCountry: '中国', insuredAddressProvince: '上海市', insuredAddressCity: '上海市', insuredAddressDistrict: '浦东新区', insuredAddress: '上海市浦东新区金桥开发区' }),
+      transportInfo: JSON.stringify({ transitPort: '', carriageType: '其他', insuranceProductType: '国内运输险', transportMode: '公路运输', invoiceNo: 'INV-2026-0626-CPU', billNo: 'BL20260626999', vesselName: '沪B·87654', transferPlateNo: '', isContainer: '否', specialTransportRequirement: '无', departureTime: '2026-06-27', originCountryCode: '国内(Domestic)', originCountry: '中国', originProvince: '辽宁省', originCity: '大连市', originDistrict: '金州区', originAddress: '大连市金州区经济技术开发区', destCountryCode: '国内(Domestic)', destCountry: '中国', destProvince: '上海市', destCity: '上海市', destDistrict: '浦东新区', destAddress: '上海市浦东新区外高桥保税区' }),
+      cargoInfo: JSON.stringify({ packageType: '天然木托', goodsNameCN: '中央处理器', goodsModel: 'i9-14900K', goodsNature: '新货', goodsQuantity: 3200, quantity: 16, shippingMark: 'INTEL-SH' }),
+      insuranceInfo: JSON.stringify({ invoiceAmount: 37073210, currencyName: '人民币', markupRatio: '发票金额原值100%', estimatedInsuranceAmount: 37073210, estimatedPremium: 9268.3, compensationCountryCode: '国内(Domestic)', compensationCountry: '中国', compensationProvince: '上海市', compensationCity: '上海市', compensationDistrict: '浦东新区', compensationAddress: '上海市浦东新区外高桥保税区富特西一路289号', remark: '英特尔CPU批量运输', insuranceFiles: [] }),
+      backfillInfo: JSON.stringify({ insuranceCompany: '中国人保', policyNo: 'PYDL202631010000002682', insurancePolicyStatus: '已承保', actualPremium: 9268.3, policyFiles: [] }),
+      correctionInfo: JSON.stringify({ insuranceCorrectionStatus: '', correctionCompanyNo: '', correctionActualPremium: 0, correctionFiles: [] }),
+      createdAt: '2026-06-26T11:38:33.000Z', updatedAt: '2026-06-26T11:38:33.000Z',
+    },
+  ];
+
+  for (const a of apps) {
+    db.run(sql`INSERT OR IGNORE INTO insurance_applications VALUES (
+      ${a.id}, ${a.businessRefNo}, ${a.insuranceCategory}, ${a.applicantCompany},
+      ${a.customerName}, ${a.insuredCompany}, ${a.approvalStatus}, ${a.applicationType},
+      ${a.version}, ${a.isLatest}, ${a.previousId}, ${a.documentStatus},
+      ${a.approvalRemark}, ${a.applicationNo}, ${a.applicationTime}, ${a.applicantName},
+      ${a.cosOrderStatus}, ${a.effectiveStatus}, ${a.isBackfill}, ${a.dataSource},
+      ${a.applicantInfo}, ${a.transportInfo}, ${a.cargoInfo},
+      ${a.insuranceInfo}, ${a.backfillInfo}, ${a.correctionInfo},
+      ${a.createdAt}, ${a.updatedAt}
+    )`);
+  }
+}
+
+async function seedClaims(db: ReturnType<typeof getDb> extends Promise<infer T> ? T : never) {
+  const claims = [
+    {
+      id: 'clm-1', reportNo: 'RPT20260625001', reportStatus: '审批通过', reportTime: '2026-06-25 14:30:00',
+      applicantName: '谭泽宇', policyNo: 'PYII2026310100000023', insuranceCompany: '中国人保',
+      insuredCompany: '深圳精智达半导体技术有限公司', claimResult: '理赔完成',
+      claimDetail: JSON.stringify({
+        businessRefNo: 'PVG-AI26060171', applicantDept: '物流部', billNo: '99993756972',
+        originCountryCode: '国际(International)', originCountry: '美国', originProvince: '加利福尼亚州', originCity: '洛杉矶', originDistrict: '', originAddress: 'LOS ANGELES, CA 90045',
+        consigneeName: '深圳精智达半导体技术有限公司',
+        destCountryCode: '国内(Domestic)', destCountry: '中国', destProvince: '上海市', destCity: '上海市', destDistrict: '浦东新区', destAddress: '上海浦东国际机场海关监管仓库',
+        goodsName: '升降搬运装置', cargoQuantity: 3, packageType2: '木制或竹藤等植物性材料制盒/箱',
+        estimatedLossAmount: 5000, lossCurrency: '美元',
+        accidentTime: '2026-06-26 18:00:00',
+        accidentCountryCode: '国内(Domestic)', accidentCountry: '中国', accidentProvince: '上海市', accidentCity: '上海市', accidentDistrict: '浦东新区', accidentAddress: '上海浦东国际机场',
+        accidentDescription: '货物在卸机过程中外包装受损，部分货物表面划伤',
+        accidentFiles: [], claimResultDetail: '经勘查确认属于保险责任范围，赔付5000美元', claimAmount: 5000, claimFiles: [],
+      }),
+      createdAt: '2026-06-25T14:30:00.000Z', updatedAt: '2026-06-26T16:00:00.000Z',
+    },
+    {
+      id: 'clm-2', reportNo: 'RPT20260628001', reportStatus: '待审批', reportTime: '2026-06-28 09:15:00',
+      applicantName: '费斌', policyNo: 'PYDL202631010000002682', insuranceCompany: '中国人保',
+      insuredCompany: '英特尔贸易（上海）有限公司', claimResult: '',
+      claimDetail: JSON.stringify({
+        businessRefNo: 'PAC-INTEL26060002Y', applicantDept: '供应链部', billNo: 'BL20260626999',
+        originCountryCode: '国内(Domestic)', originCountry: '中国', originProvince: '辽宁省', originCity: '大连市', originDistrict: '金州区', originAddress: '大连市金州区经济技术开发区',
+        consigneeName: '英特尔贸易（上海）有限公司',
+        destCountryCode: '国内(Domestic)', destCountry: '中国', destProvince: '上海市', destCity: '上海市', destDistrict: '浦东新区', destAddress: '上海市浦东新区外高桥保税区',
+        goodsName: '中央处理器', cargoQuantity: 50, packageType2: '天然木托',
+        estimatedLossAmount: 150000, lossCurrency: '人民币',
+        accidentTime: '2026-06-27 22:30:00',
+        accidentCountryCode: '国内(Domestic)', accidentCountry: '中国', accidentProvince: '江苏省', accidentCity: '苏州市', accidentDistrict: '昆山市', accidentAddress: 'G2京沪高速昆山段',
+        accidentDescription: '运输途中遭遇暴雨，部分货物受潮',
+        accidentFiles: [], claimResultDetail: '', claimAmount: 0, claimFiles: [],
+      }),
+      createdAt: '2026-06-28T09:15:00.000Z', updatedAt: '2026-06-28T09:15:00.000Z',
+    },
+  ];
+
+  for (const c of claims) {
+    db.run(sql`INSERT OR IGNORE INTO claim_reports VALUES (
+      ${c.id}, ${c.reportNo}, ${c.reportStatus}, ${c.reportTime},
+      ${c.applicantName}, ${c.policyNo}, ${c.insuranceCompany},
+      ${c.insuredCompany}, ${c.claimResult}, ${c.claimDetail},
+      ${c.createdAt}, ${c.updatedAt}
+    )`);
+  }
+}

@@ -1,71 +1,102 @@
-import { useState, useCallback } from 'react';
+'use client';
 
-function loadJson<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
+// 用户配置持久化 hook — localStorage + API 双写
+// 与旧 IMS 的 usePersistedConfig 接口兼容
+import { useState, useEffect, useCallback } from 'react';
+
+interface PersistedConfig<T> {
+  config: T;
+  toggle: (key: string) => void;
+  reorder: (from: number, to: number) => void;
+  moveToTop: (key: string) => void;
+  reset: () => void;
+  ready: boolean;
 }
 
-function saveJson(key: string, value: unknown): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch { /* quota exceeded, silently ignore */ }
-}
+export function usePersistedConfig<T extends { key: string; visible: boolean }[]>(
+  configKey: string,
+  defaults: T
+): PersistedConfig<T> {
+  const [config, setConfig] = useState<T>(defaults);
+  const [ready, setReady] = useState(false);
 
-export interface FieldConfig {
-  key: string;
-  visible: boolean;
-  order: number;
-}
+  // 初始化加载
+  useEffect(() => {
+    async function load() {
+      try {
+        // 尝试从 API 加载
+        const res = await fetch(`/api/column-configs?key=${configKey}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          setConfig(data.data as T);
+          setReady(true);
+          return;
+        }
+      } catch { /* ignore */ }
 
-export function usePersistedConfig(key: string, defaultFields: FieldConfig[]) {
-  const [fields, setFields] = useState<FieldConfig[]>(() => {
-    const saved = loadJson<FieldConfig[] | null>(key, null);
-    if (saved && saved.length > 0) return saved;
-    return defaultFields;
-  });
+      // 降级：从 localStorage 加载
+      try {
+        const stored = localStorage.getItem(`ims_${configKey}`);
+        if (stored) {
+          setConfig(JSON.parse(stored) as T);
+        }
+      } catch { /* ignore */ }
 
-  const persist = useCallback(
-    (next: FieldConfig[]) => {
-      setFields(next);
-      saveJson(key, next);
+      setReady(true);
+    }
+    load();
+  }, [configKey]);
+
+  // 同步保存
+  const save = useCallback(
+    (newConfig: T) => {
+      setConfig(newConfig);
+      // localStorage 同步写入
+      try {
+        localStorage.setItem(`ims_${configKey}`, JSON.stringify(newConfig));
+      } catch { /* ignore */ }
+      // API 异步写入
+      fetch('/api/column-configs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ configKey, configData: newConfig }),
+      }).catch(() => { /* ignore */ });
     },
-    [key],
+    [configKey]
   );
 
   const toggle = useCallback(
-    (fieldKey: string) => {
-      const next = fields.map((f) => (f.key === fieldKey ? { ...f, visible: !f.visible } : f));
-      persist(next);
+    (key: string) => {
+      const newConfig = config.map((item) =>
+        item.key === key ? { ...item, visible: !item.visible } : item
+      ) as T;
+      save(newConfig);
     },
-    [fields, persist],
+    [config, save]
   );
 
   const reorder = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      const next = [...fields];
-      const [moved] = next.splice(fromIndex, 1);
-      next.splice(toIndex, 0, moved);
-      const reordered = next.map((f, i) => ({ ...f, order: i }));
-      persist(reordered);
+    (from: number, to: number) => {
+      const newConfig = [...config] as T;
+      const [removed] = newConfig.splice(from, 1);
+      newConfig.splice(to, 0, removed);
+      save(newConfig);
     },
-    [fields, persist],
+    [config, save]
+  );
+
+  const moveToTop = useCallback(
+    (key: string) => {
+      const idx = config.findIndex((item) => item.key === key);
+      if (idx <= 0) return;
+      reorder(idx, 0);
+    },
+    [config, reorder]
   );
 
   const reset = useCallback(() => {
-    persist(defaultFields);
-  }, [persist, defaultFields]);
+    save(defaults);
+  }, [defaults, save]);
 
-  const visibleFields = fields
-    .filter((f) => f.visible)
-    .sort((a, b) => a.order - b.order);
-
-  const hiddenFields = fields
-    .filter((f) => !f.visible)
-    .sort((a, b) => a.order - b.order);
-
-  return { fields, visibleFields, hiddenFields, toggle, reorder, reset, setFields: persist };
+  return { config, toggle, reorder, moveToTop, reset, ready };
 }
