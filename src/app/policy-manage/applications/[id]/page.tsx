@@ -37,11 +37,10 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
   const { id } = use(params);
   const router = useRouter();
   const { applications, loading } = useApp();
-  const app = useMemo(() => applications.find((a) => a.id === id), [applications, id]);
-
-  if (loading) return <div className="max-w-4xl mx-auto py-8"><SkeletonCard /></div>;
   const [showChanges, setShowChanges] = useState(false);
   const [versions, setVersions] = useState<HistoryVersion[]>([]);
+
+  const app = useMemo(() => applications.find((a) => a.id === id), [applications, id]);
 
   // 加载历史版本用于对比
   useEffect(() => {
@@ -50,6 +49,8 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
       .then((d) => { if (d.success && d.data.length > 0) setVersions(d.data); })
       .catch(() => {});
   }, [id]);
+
+  if (loading) return <div className="max-w-4xl mx-auto py-8"><SkeletonCard /></div>;
 
   if (!app) {
     return <div className="max-w-4xl mx-auto py-12 text-center text-tertiary">投保申请未找到</div>;

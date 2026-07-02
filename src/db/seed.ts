@@ -2,6 +2,7 @@
  * 数据库种子数据 — 启动时自动建表 + 插入示例数据
  */
 import { getDb, getRawDb, saveDb } from './index';
+import { historyVersions, approvalHistory, changeLogs } from './schema';
 
 export async function autoMigrate() {
   await getDb();
@@ -68,7 +69,7 @@ export async function autoMigrate() {
   seedExchangeRates(rawDb);
   seedInsuranceRates(rawDb);
   seedApplications(rawDb);
-  seedHistory(rawDb);
+  seedHistory(db);
   seedClaims(rawDb);
 
   saveDb();
@@ -164,44 +165,29 @@ function seedApplications(db: { run: (s: string) => void }) {
   }
 }
 
-function seedHistory(db: { run: (s: string) => void }) {
-  const ai = (o: object) => q(JSON.stringify(o));
+function seedHistory(
+  _db: ReturnType<typeof getDb> extends Promise<infer T> ? T : never
+) {
+  const rawDb = getRawDb();
+  const j = (o: unknown) => { const s = JSON.stringify(o); return `'${s.replace(/'/g, "''")}'`; };
 
-  // 历史版本 — app-1(V2批改) 的上一个版本是 app-4(V1原始)
-  db.run(`INSERT OR IGNORE INTO history_versions VALUES ('histv-1','app-1',1,'2026-06-20 10:15:00','原始投保',${ai({
-    businessRefNo:'PVG-AI26060171',insuranceCategory:'非保入库',
-    transitPort:'上海浦东国际机场（中国）',carriageType:'普通集装箱',packageType:'纸制或纤维板制盒/箱',
-    goodsNameCN:'升降搬运装置等',goodsModel:'HX-2000',quantity:2,goodsNature:'新货',goodsQuantity:100,shippingMark:'N/M',
-    currencyName:'美元',invoiceAmount:56000,estimatedInsuranceAmount:61600,markupRatio:'发票金额原值100%',estimatedPremium:154,
-    insuranceCompany:'中国平安',policyNo:'PYII2026310100000018',actualPremium:154,insurancePolicyStatus:'待承保',
-    insuranceCorrectionStatus:'',correctionActualPremium:0,correctionCompanyNo:'',
-  })})`);
+  // 历史版本
+  rawDb.run(`INSERT OR IGNORE INTO history_versions (id, application_id, version, timestamp, label, data) VALUES ('histv-1','app-1',1,'2026-06-20 10:15:00','原始投保',${j({businessRefNo:'PVG-AI26060171',transitPort:'上海浦东国际机场（中国）',carriageType:'普通集装箱',packageType:'纸制或纤维板制盒/箱',goodsNameCN:'升降搬运装置等',quantity:2,goodsNature:'新货',invoiceAmount:56000,estimatedInsuranceAmount:61600,markupRatio:'发票金额原值100%',estimatedPremium:154,actualPremium:154,insuranceCompany:'中国平安',insurancePolicyStatus:'待承保'})})`);
 
   // 审批历史
-  const approvals = [
-    ['ah-1','app-1','2026-06-20 14:00:00','张经理','审批通过','材料齐全，风险可控，同意承保'],
-    ['ah-2','app-1','2026-06-25 11:00:00','李主管','审批通过','批改申请已核实，保费调整无误，同意批改'],
-    ['ah-3','app-2','2026-06-26 15:00:00','张经理','审批通过','英特尔CPU运输，保额较大但风险可控'],
-    ['ah-4','app-5','2026-07-01 12:00:00','王总监','审批拒绝','缺少运输许可证明，材料不全，请补全后重新提交'],
-    ['ah-5','app-6','2026-07-01 17:00:00','张经理','审批中',''],
-  ];
-  for (const a of approvals) {
-    db.run(`INSERT OR IGNORE INTO approval_history VALUES (${a.map(q).join(',')})`);
-  }
+  rawDb.run("INSERT OR IGNORE INTO approval_history (id, application_id, timestamp, approver, action, comment) VALUES ('ah-1','app-1','2026-06-20 14:00:00','张经理','审批通过','材料齐全，风险可控，同意承保')");
+  rawDb.run("INSERT OR IGNORE INTO approval_history (id, application_id, timestamp, approver, action, comment) VALUES ('ah-2','app-1','2026-06-25 11:00:00','李主管','审批通过','批改申请已核实，保费调整无误，同意批改')");
+  rawDb.run("INSERT OR IGNORE INTO approval_history (id, application_id, timestamp, approver, action, comment) VALUES ('ah-3','app-2','2026-06-26 15:00:00','张经理','审批通过','英特尔CPU运输，保额较大但风险可控')");
+  rawDb.run("INSERT OR IGNORE INTO approval_history (id, application_id, timestamp, approver, action, comment) VALUES ('ah-4','app-5','2026-07-01 12:00:00','王总监','审批拒绝','缺少运输许可证明，材料不全，请补全后重新提交')");
+  rawDb.run("INSERT OR IGNORE INTO approval_history (id, application_id, timestamp, approver, action, comment) VALUES ('ah-5','app-6','2026-07-01 17:00:00','张经理','审批中','')");
 
-  // 修改日志 — app-1 批改前后的变更
-  const logs = [
-    ['cl-1','app-1','2026-06-25 09:35:00','谭泽宇','运输方式','航空运输','航空运输'],
-    ['cl-2','app-1','2026-06-25 09:35:00','谭泽宇','包装种类','纸制或纤维板制盒/箱','木制或竹藤等植物性材料制盒/箱'],
-    ['cl-3','app-1','2026-06-25 09:35:00','谭泽宇','保险公司名称','中国平安','中国人保'],
-    ['cl-4','app-1','2026-06-25 09:35:00','谭泽宇','保单单号','PYII2026310100000018','PYII2026310100000023'],
-    ['cl-5','app-1','2026-06-25 09:35:00','谭泽宇','预计保费','154.00','168.09'],
-    ['cl-6','app-1','2026-06-25 09:35:00','谭泽宇','实际保费','154.00','168.12'],
-    ['cl-7','app-1','2026-06-25 09:35:00','谭泽宇','加成比例','发票金额原值100%','发票金额原值110%'],
-  ];
-  for (const l of logs) {
-    db.run(`INSERT OR IGNORE INTO change_logs VALUES (${l.map(q).join(',')})`);
-  }
+  // 修改日志
+  rawDb.run("INSERT OR IGNORE INTO change_logs (id, application_id, timestamp, user, field_label, old_value, new_value) VALUES ('cl-1','app-1','2026-06-25 09:35:00','谭泽宇','包装种类','纸制或纤维板制盒/箱','木制或竹藤等植物性材料制盒/箱')");
+  rawDb.run("INSERT OR IGNORE INTO change_logs (id, application_id, timestamp, user, field_label, old_value, new_value) VALUES ('cl-2','app-1','2026-06-25 09:35:00','谭泽宇','保险公司名称','中国平安','中国人保')");
+  rawDb.run("INSERT OR IGNORE INTO change_logs (id, application_id, timestamp, user, field_label, old_value, new_value) VALUES ('cl-3','app-1','2026-06-25 09:35:00','谭泽宇','保单单号','PYII2026310100000018','PYII2026310100000023')");
+  rawDb.run("INSERT OR IGNORE INTO change_logs (id, application_id, timestamp, user, field_label, old_value, new_value) VALUES ('cl-4','app-1','2026-06-25 09:35:00','谭泽宇','预计保费','154.00','168.09')");
+  rawDb.run("INSERT OR IGNORE INTO change_logs (id, application_id, timestamp, user, field_label, old_value, new_value) VALUES ('cl-5','app-1','2026-06-25 09:35:00','谭泽宇','实际保费','154.00','168.12')");
+  rawDb.run("INSERT OR IGNORE INTO change_logs (id, application_id, timestamp, user, field_label, old_value, new_value) VALUES ('cl-6','app-1','2026-06-25 09:35:00','谭泽宇','加成比例','发票金额原值100%','发票金额原值110%')");
 }
 
 function seedClaims(db: { run: (s: string) => void }) {
