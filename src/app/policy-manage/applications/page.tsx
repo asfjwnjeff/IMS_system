@@ -18,6 +18,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { usePersistedConfig } from '@/hooks/usePersistedConfig';
+import { cn } from '@/lib/utils';
+import { SECTION_JSON_MAP } from '@/lib/field-defs';
 import { toast } from 'sonner';
 import { Search, RotateCcw, Download, MoreHorizontal, Eye, Pencil, Trash2, Settings2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { SkeletonTable } from '@/components/ui/skeleton';
@@ -489,8 +491,6 @@ export default function InsuranceApplicationPage() {
 }
 
 // ===== 工具函数 =====
-import { cn } from '@/lib/utils';
-import { SECTION_JSON_MAP } from '@/lib/field-defs';
 
 function getFieldString(app: InsuranceApplication, key: string): string {
   const sectionKey = SECTION_JSON_MAP[key];

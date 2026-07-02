@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useMemo, useState } from 'react';
+import { use, useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/lib/store';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -44,12 +44,12 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
   const [versions, setVersions] = useState<HistoryVersion[]>([]);
 
   // 加载历史版本用于对比
-  useState(() => {
+  useEffect(() => {
     fetch(`/api/history?type=versions&applicationId=${id}`)
       .then((r) => r.json())
       .then((d) => { if (d.success && d.data.length > 0) setVersions(d.data); })
       .catch(() => {});
-  });
+  }, [id]);
 
   if (!app) {
     return <div className="max-w-4xl mx-auto py-12 text-center text-tertiary">投保申请未找到</div>;

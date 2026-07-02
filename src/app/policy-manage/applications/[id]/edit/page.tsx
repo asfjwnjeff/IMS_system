@@ -13,6 +13,7 @@ import { HistoryPanel } from '@/components/HistoryPanel';
 import { sections, SECTION_JSON_MAP, type SectionDef, type FieldDef } from '@/lib/field-defs';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, ArrowLeftRight } from 'lucide-react';
+import { SkeletonCard } from '@/components/ui/skeleton';
 import type { InsuranceApplication, HistoryVersion } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -51,7 +52,7 @@ type SectionValues = Record<string, Record<string, unknown>>;
 export default function ApplicationEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { applications, dispatch } = useApp();
+  const { applications, dispatch, loading } = useApp();
   const app = useMemo(() => applications.find((a) => a.id === id), [applications, id]);
   const [showChanges, setShowChanges] = useState(false);
   const [editValues, setEditValues] = useState<SectionValues>({});
@@ -95,6 +96,7 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
     setEditValues(sv);
   }, [app]);
 
+  if (loading) return <div className="max-w-4xl mx-auto py-8"><SkeletonCard /></div>;
   if (!app) return <div className="max-w-4xl mx-auto py-12 text-center text-tertiary">投保申请未找到</div>;
 
   const compareVersion: HistoryVersion | null = versions.length > 0 ? versions[versions.length - 1] : null;
@@ -163,13 +165,13 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
     } else if (f.type === 'number') {
       control = <Input type="number" min="0" value={value == null ? '' : String(value)} onChange={(e) => setFieldValue(sk, f.key, e.target.value === '' ? undefined : Number(e.target.value))} />;
     } else if (f.type === 'date') {
-      control = <Input type="date" value={value == null ? '' : String(value)} onChange={(e) => setFieldValue(sk, f.key, e.target.value)} />;
+      control = <Input type="date" value={value == null ? '' : String(value)} onChange={(e: { target: { value: string } }) => setFieldValue(sk, f.key, e.target.value)} />;
     } else if (f.type === 'textarea') {
-      control = <Textarea value={value == null ? '' : String(value)} onChange={(e) => setFieldValue(sk, f.key, e.target.value)} rows={2} />;
+      control = <Textarea value={value == null ? '' : String(value)} onChange={(e: { target: { value: string } }) => setFieldValue(sk, f.key, e.target.value)} rows={2} />;
     } else if (f.type === 'upload') {
       control = <Input placeholder="点击选择附件" readOnly className="cursor-pointer" onClick={() => toast.info('文件上传 — 待实现')} />;
     } else {
-      control = <Input value={value == null ? '' : String(value)} onChange={(e) => setFieldValue(sk, f.key, e.target.value)} />;
+      control = <Input value={value == null ? '' : String(value)} onChange={(e: { target: { value: string } }) => setFieldValue(sk, f.key, e.target.value)} />;
     }
 
     return (

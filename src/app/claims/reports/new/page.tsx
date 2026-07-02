@@ -101,7 +101,7 @@ export default function ClaimAddPage() {
             <div className={halfCol}><label className="text-sm">出险地区/县</label><Input value={(form.claimDetail as ClaimDetail).accidentDistrict || ''} onChange={(e) => u('accidentDistrict', e.target.value)} /></div>
             <div className={halfCol}><label className="text-sm">出险地详细地址</label><Input value={(form.claimDetail as ClaimDetail).accidentAddress || ''} onChange={(e) => u('accidentAddress', e.target.value)} /></div>
           </div>
-          <div className="mt-4"><label className="text-sm">出险经过与原因</label><Textarea value={(form.claimDetail as ClaimDetail).accidentDescription || ''} onChange={(e) => u('accidentDescription', e.target.value)} rows={4} maxLength={500} /><span className="text-xs text-tertiary">{((form.claimDetail as ClaimDetail).accidentDescription || '').length}/500</span></div>
+          <div className="mt-4"><label className="text-sm">出险经过与原因</label><Textarea value={(form.claimDetail as ClaimDetail).accidentDescription || ''} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => u('accidentDescription', e.target.value)} rows={4} maxLength={500} /><span className="text-xs text-tertiary">{((form.claimDetail as ClaimDetail).accidentDescription || '').length}/500</span></div>
           <div className="mt-4"><label className="text-sm">出险附件</label><Input placeholder="点击上传 大小不超过 5MB" /></div>
         </CardContent>
       </Card>

@@ -4,81 +4,54 @@
   :root {
     /* === Clean Blue 品牌色 === */
     --accent: #1677ff;
-    --accent-hover: #4096ff;
+    --accent-hover: #0958d9;
     --accent-light: #e6f4ff;
     --accent-foreground: #FFFFFF;
 
-    /* === 中性色 === */
-    --text-primary: #0A0A0A;
-    --text-secondary: #5A5A5A;
-    --text-tertiary: #999999;
+    /* === 文字（3级分层） === */
+    --text-primary: #262626;
+    --text-secondary: #595959;
+    --text-tertiary: #8c8c8c;
+
+    /* === 背景（3级分层：页面→卡片→内嵌） === */
     --bg-page: #f5f5f5;
-    --bg-surface: #FFFFFF;
-    --bg-hover: #fafafa;
+    --bg-surface: #ffffff;
+    --bg-subtle: #fafafa;
+
+    /* === 边框（2级：分隔线→输入框） === */
     --border-light: #f0f0f0;
-    --border-medium: #d9d9d9;
+    --border-input: #d9d9d9;
 
     /* === 侧栏 === */
     --sidebar-bg: #001529;
     --sidebar-text: rgba(255, 255, 255, 0.65);
-    --sidebar-text-active: #FFFFFF;
-    --sidebar-item-hover: rgba(255, 255, 255, 0.08);
+    --sidebar-active: #ffffff;
 
     /* === 功能色 === */
     --success: #52c41a;
-    --success-light: #f6ffed;
+    --success-bg: #f6ffed;
     --warning: #faad14;
-    --warning-light: #fffbe6;
+    --warning-bg: #fffbe6;
     --error: #ff4d4f;
-    --error-light: #fff2f0;
-    --info: #1677ff;
+    --error-bg: #fff2f0;
 
-    /* === 圆角 === */
+    /* === 圆角 — 统一 6px === */
     --radius-sm: 4px;
-    --radius-md: 6px;
+    --radius: 6px;
     --radius-lg: 8px;
-    --radius-xl: 12px;
-    --radius-2xl: 16px;
 
     /* === 阴影 === */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-
-    /* === 间距 === */
-    --space-xs: 4px;
-    --space-sm: 8px;
-    --space-md: 12px;
-    --space-lg: 16px;
-    --space-xl: 24px;
-    --space-2xl: 32px;
-
-    /* === z-index === */
-    --z-dropdown: 50;
-    --z-sticky: 100;
-    --z-modal: 200;
-    --z-toast: 300;
+    --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --card-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --focus-ring: 0 0 0 2px rgba(22, 119, 255, 0.1);
 
     /* === 过渡 === */
-    --transition-fast: 0.1s ease;
-    --transition-normal: 0.2s ease;
-    --transition-slow: 0.3s ease;
+    --transition: 0.2s ease;
 
     /* === 字体 === */
-    --font-sans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
-    --font-mono: "SF Mono", "JetBrains Mono", "Consolas", monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 
-    /* === 字号 === */
-    --text-xs: 11px;
-    --text-sm: 13px;
-    --text-base: 14px;
-    --text-md: 16px;
-    --text-lg: 20px;
-    --text-xl: 24px;
-    --text-2xl: 32px;
-
-    /* === shadcn/ui 兼容变量（指向 Clean Blue 值） === */
+    /* === shadcn/ui 兼容（全部指向 Clean Blue 变量） === */
     --primary: var(--accent);
     --primary-foreground: var(--accent-foreground);
     --background: var(--bg-page);
@@ -87,69 +60,56 @@
     --card-foreground: var(--text-primary);
     --popover: var(--bg-surface);
     --popover-foreground: var(--text-primary);
-    --secondary: var(--bg-hover);
+    --secondary: var(--bg-hover, #f5f5f5);
     --secondary-foreground: var(--text-primary);
-    --muted: var(--bg-hover);
+    --muted: var(--bg-subtle);
     --muted-foreground: var(--text-secondary);
     --destructive: var(--error);
     --destructive-foreground: #FFFFFF;
-    --border: var(--border-medium);
-    --input: var(--border-medium);
+    --border: var(--border-light);
+    --input: var(--border-input);
     --ring: var(--accent);
-    --radius: var(--radius-md);
   }
 
   .dark {
     --accent: #1677ff;
     --accent-hover: #4096ff;
     --accent-light: #111d2c;
-    --accent-foreground: #FFFFFF;
 
     --text-primary: #FFFFFF;
     --text-secondary: #98989E;
     --text-tertiary: #636366;
     --bg-page: #0D0D0D;
     --bg-surface: #1C1C1E;
-    --bg-hover: #2C2C2E;
+    --bg-subtle: #2C2C2E;
     --border-light: #38383A;
-    --border-medium: #48484A;
-
-    --sidebar-bg: #001529;
-    --sidebar-text: rgba(255, 255, 255, 0.65);
-    --sidebar-text-active: #FFFFFF;
-    --sidebar-item-hover: rgba(255, 255, 255, 0.08);
+    --border-input: #48484A;
 
     --success: #49aa19;
-    --success-light: #162312;
+    --success-bg: #162312;
     --warning: #d89614;
-    --warning-light: #2b2111;
+    --warning-bg: #2b2111;
     --error: #d32029;
-    --error-light: #2c1213;
-    --info: #1677ff;
+    --error-bg: #2c1213;
 
-    --shadow-xs: none;
-    --shadow-sm: none;
-    --shadow-md: none;
-    --shadow-lg: none;
+    --card-shadow: none;
+    --card-shadow-hover: none;
+    --focus-ring: 0 0 0 2px rgba(22, 119, 255, 0.25);
 
-    /* shadcn 兼容变量完全由 Clean Blue 暗色值派生 */
     --primary: var(--accent);
-    --primary-foreground: var(--accent-foreground);
     --background: var(--bg-page);
     --foreground: var(--text-primary);
     --card: var(--bg-surface);
     --card-foreground: var(--text-primary);
     --popover: var(--bg-surface);
     --popover-foreground: var(--text-primary);
-    --secondary: var(--bg-hover);
+    --secondary: var(--bg-subtle);
     --secondary-foreground: var(--text-primary);
-    --muted: var(--bg-hover);
+    --muted: var(--bg-subtle);
     --muted-foreground: var(--text-secondary);
     --destructive: var(--error);
-    --destructive-foreground: #FFFFFF;
-    --border: var(--border-medium);
-    --input: var(--border-medium);
-    --ring: var(--accent);
+    --border: var(--border-light);
+    --input: var(--border-input);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -172,11 +132,11 @@
 
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-input); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
   *:focus-visible {
-    outline: 2px solid var(--ring);
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 
@@ -185,25 +145,26 @@
   }
 }
 
-/* === 主题响应式工具类 === */
-.bg-page { background-color: var(--bg-page); }
-.bg-surface { background-color: var(--bg-surface); }
-.bg-hover { background-color: var(--bg-hover); }
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-tertiary { color: var(--text-tertiary); }
-.border-light { border-color: var(--border-light); }
-.border-medium { border-color: var(--border-medium); }
+/* === 全局 Ant Design 风格输入框 === */
+.antd-input {
+  border-radius: var(--radius) !important;
+  border-color: var(--border-input) !important;
+  transition: all var(--transition);
+  font-size: 13px;
+}
+.antd-input:hover { border-color: var(--accent) !important; }
+.antd-input:focus, .antd-input:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: var(--focus-ring) !important;
+}
 
 /* === 动画 === */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-.animate-fadeIn { animation: fadeIn var(--transition-fast); }
-.animate-slideUp { animation: slideUp var(--transition-fast); }
-.animate-slideDown { animation: slideDown var(--transition-fast); }
+.animate-fadeIn { animation: fadeIn var(--transition); }
+.animate-slideUp { animation: slideUp var(--transition); }
 .animate-shimmer { animation: shimmer 1.5s infinite; }
 .animate-spin { animation: spin 1s linear infinite; }

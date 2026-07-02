@@ -124,7 +124,7 @@ export default function InsuranceRateConfigPage() {
             <div><label className="text-sm">新旧类型</label><Select value={form.oldNewType || ''} onValueChange={(v) => setForm({ ...form, oldNewType: v })}><SelectTrigger><SelectValue placeholder="请选择" /></SelectTrigger><SelectContent><SelectItem value="新货">新货</SelectItem><SelectItem value="旧货">旧货</SelectItem></SelectContent></Select></div>
             <div><label className="text-sm">生效日期</label><Input type="date" value={form.effectiveDate} onChange={(e) => setForm({ ...form, effectiveDate: e.target.value })} /></div>
             <div><label className="text-sm">失效日期</label><Input type="date" value={form.expiryDate} onChange={(e) => setForm({ ...form, expiryDate: e.target.value })} /></div>
-            <div className="col-span-2"><label className="text-sm">备注</label><Textarea value={form.remark || ''} onChange={(e) => setForm({ ...form, remark: e.target.value })} rows={3} /></div>
+            <div className="col-span-2"><label className="text-sm">备注</label><Textarea value={form.remark || ''} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setForm({ ...form, remark: e.target.value })} rows={3} /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button><Button onClick={handleSave} disabled={saving}>{saving ? '保存中...' : '保存'}</Button></DialogFooter>
         </DialogContent>
