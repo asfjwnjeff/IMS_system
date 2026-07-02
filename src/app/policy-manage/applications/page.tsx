@@ -19,7 +19,9 @@ import {
 } from '@/components/ui/dialog';
 import { usePersistedConfig } from '@/hooks/usePersistedConfig';
 import { toast } from 'sonner';
-import { Search, RotateCcw, Download, MoreHorizontal, Eye, Pencil, Trash2, Settings2 } from 'lucide-react';
+import { Search, RotateCcw, Download, MoreHorizontal, Eye, Pencil, Trash2, Settings2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { SkeletonTable } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { InsuranceApplication } from '@/lib/types';
 
 // ===== 搜索字段定义 =====
@@ -92,7 +94,7 @@ const allColumns = [
 
 const columnLabelMap: Record<string, string> = Object.fromEntries(allColumns.map((c) => [c.key, c.title]));
 
-const defaultColumnFields = allColumns.map((c, i) => ({ key: c.key, visible: true, order: i }));
+const defaultColumnFields = allColumns.map((c, i) => ({ key: c.key, label: c.title, visible: true, order: i }));
 
 // 审批状态颜色
 const statusColorMap: Record<string, 'success' | 'warning' | 'secondary' | 'destructive' | 'default'> = {
@@ -101,10 +103,12 @@ const statusColorMap: Record<string, 'success' | 'warning' | 'secondary' | 'dest
 
 export default function InsuranceApplicationPage() {
   const router = useRouter();
-  const { applications, dispatch } = useApp();
+  const { applications, dispatch, loading } = useApp();
   const [searchValues, setSearchValues] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<'latest' | 'all'>('latest');
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // 搜索字段配置
   const searchConfig = usePersistedConfig('ims_search_fields', defaultSearchFields);
@@ -131,6 +135,10 @@ export default function InsuranceApplicationPage() {
   }, [applications, viewMode, searchValues]);
 
   const visibleColumns = columnConfig.config.filter((c) => c.visible);
+
+  // 分页
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   // ===== 渲染表格单元格 =====
   function renderCell(app: InsuranceApplication, colKey: string) {
@@ -338,8 +346,16 @@ export default function InsuranceApplicationPage() {
       {/* 表格 */}
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
+          {loading ? (
+            <SkeletonTable rows={5} cols={6} />
+          ) : filtered.length === 0 ? (
+            <EmptyState
+              title="暂无投保申请"
+              description="当前筛选条件下没有投保申请记录"
+            />
+          ) : (
+            <div className="overflow-x-auto">
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
                   {visibleColumns.map((c) => (
@@ -347,18 +363,18 @@ export default function InsuranceApplicationPage() {
                       style={{ width: allColumns.find((x) => x.key === c.key)?.width || 'auto', textAlign: allColumns.find((x) => x.key === c.key)?.align || 'left' }}
                     >{columnLabelMap[c.key]}</TableHead>
                   ))}
-                  <TableHead className="w-[80px] text-center sticky right-0 bg-white dark:bg-card">操作</TableHead>
+                  <TableHead className="w-[80px] text-center sticky right-0 bg-background">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((app) => (
+                {paginated.map((app) => (
                   <TableRow key={app.id} className={!app.isLatest ? 'opacity-50' : ''}>
                     {visibleColumns.map((c) => (
                       <TableCell key={c.key} style={{ textAlign: allColumns.find((x) => x.key === c.key)?.align || 'left' }}>
                         {renderCell(app, c.key)}
                       </TableCell>
                     ))}
-                    <TableCell className="sticky right-0 bg-white dark:bg-card">
+                    <TableCell className="sticky right-0 bg-background">
                       {!app.isLatest ? (
                         <Button variant="link" size="sm" onClick={() => router.push(`/policy-manage/applications/${app.id}`)}>查看</Button>
                       ) : (
@@ -388,12 +404,33 @@ export default function InsuranceApplicationPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {filtered.length === 0 && (
-                  <TableRow><TableCell colSpan={visibleColumns.length + 1} className="text-center text-tertiary py-12">暂无数据</TableCell></TableRow>
-                )}
               </TableBody>
             </Table>
           </div>
+          )}
+          {/* 分页 */}
+          {filtered.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-light">
+            <div className="flex items-center gap-2 text-sm text-secondary">
+              共 {filtered.length} 条
+              <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
+                <SelectTrigger size="sm" className="w-[80px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10 条</SelectItem>
+                  <SelectItem value="20">20 条</SelectItem>
+                  <SelectItem value="50">50 条</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage(1)}><ChevronsLeft className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft className="w-4 h-4" /></Button>
+              <span className="text-sm px-2 min-w-[60px] text-center">{page} / {totalPages || 1}</span>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage(page + 1)}><ChevronRight className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage(totalPages)}><ChevronsRight className="w-4 h-4" /></Button>
+            </div>
+          </div>
+          )}
         </CardContent>
       </Card>
 

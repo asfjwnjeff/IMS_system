@@ -161,7 +161,7 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
         </Select>
       );
     } else if (f.type === 'number') {
-      control = <Input type="number" value={value == null ? '' : String(value)} onChange={(e) => setFieldValue(sk, f.key, e.target.value === '' ? undefined : Number(e.target.value))} />;
+      control = <Input type="number" min="0" value={value == null ? '' : String(value)} onChange={(e) => setFieldValue(sk, f.key, e.target.value === '' ? undefined : Number(e.target.value))} />;
     } else if (f.type === 'date') {
       control = <Input type="date" value={value == null ? '' : String(value)} onChange={(e) => setFieldValue(sk, f.key, e.target.value)} />;
     } else if (f.type === 'textarea') {

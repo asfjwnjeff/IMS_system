@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Descriptions } from '@/components/ui/descriptions';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { SkeletonCard } from '@/components/ui/skeleton';
 import type { DescItem } from '@/components/ui/descriptions';
 
 const statusColor: Record<string, 'success' | 'warning' | 'secondary' | 'destructive'> = {
@@ -17,9 +18,10 @@ const statusColor: Record<string, 'success' | 'warning' | 'secondary' | 'destruc
 export default function ClaimDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { claims } = useApp();
+  const { claims, loading } = useApp();
   const claim = useMemo(() => claims.find((c) => c.id === id), [claims, id]);
 
+  if (loading) return <div className="max-w-4xl mx-auto py-8"><SkeletonCard /></div>;
   if (!claim) return <div className="max-w-4xl mx-auto py-12 text-center text-tertiary">报案记录未找到</div>;
 
   const d = (claim.claimDetail || {}) as unknown as Record<string, unknown>;

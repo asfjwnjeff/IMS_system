@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { HistoryPanel } from '@/components/HistoryPanel';
 import { sections, SECTION_JSON_MAP, type SectionDef, type FieldDef } from '@/lib/field-defs';
 import { ArrowLeft, Pencil, ArrowLeftRight } from 'lucide-react';
+import { SkeletonCard } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { InsuranceApplication, HistoryVersion } from '@/lib/types';
 
 const statusTags: Record<string, 'success' | 'warning' | 'secondary' | 'destructive' | 'default' | 'outline'> = {
@@ -34,8 +36,10 @@ function formatVal(v: unknown, key: string): string {
 export default function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { applications } = useApp();
+  const { applications, loading } = useApp();
   const app = useMemo(() => applications.find((a) => a.id === id), [applications, id]);
+
+  if (loading) return <div className="max-w-4xl mx-auto py-8"><SkeletonCard /></div>;
   const [showChanges, setShowChanges] = useState(false);
   const [versions, setVersions] = useState<HistoryVersion[]>([]);
 

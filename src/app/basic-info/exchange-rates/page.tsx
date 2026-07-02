@@ -10,19 +10,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus, Search, RotateCcw, Pencil } from 'lucide-react';
+import { SkeletonTable } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { ExchangeRate } from '@/lib/types';
 
 const emptyForm = { insuranceCompany: '中国人保', exchangeRate: 0, effectiveDate: '', expiryDate: '', currency: '美元', creator: '管理员', createTime: '' };
 
 export default function ExchangeRateConfigPage() {
-  const { exchangeRates, dispatch } = useApp();
+  const { exchangeRates, dispatch, loading } = useApp();
   const [searchCompany, setSearchCompany] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  const filtered = useMemo(() => exchangeRates.filter((r) => !searchCompany || searchCompany === 'all' || r.insuranceCompany === searchCompany), [exchangeRates, searchCompany]);
+  const filtered = useMemo(() => exchangeRates.filter((r) => {
+    if (searchCompany && searchCompany !== 'all' && r.insuranceCompany !== searchCompany) return false;
+    if (dateFrom && r.effectiveDate < dateFrom) return false;
+    if (dateTo && r.effectiveDate > dateTo) return false;
+    return true;
+  }), [exchangeRates, searchCompany, dateFrom, dateTo]);
 
   function openCreate() { setEditingId(null); setForm({ ...emptyForm, createTime: '' }); setDialogOpen(true); }
   function openEdit(r: ExchangeRate) { setEditingId(r.id); setForm(r); setDialogOpen(true); }
@@ -58,14 +67,18 @@ export default function ExchangeRateConfigPage() {
                 <SelectItem value="人保财险">人保财险</SelectItem>
               </SelectContent>
             </Select>
+            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[150px]" placeholder="生效日期起" />
+            <span className="text-tertiary">-</span>
+            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[150px]" placeholder="生效日期止" />
             <Button size="sm"><Search className="w-4 h-4 mr-1" />搜索</Button>
-            <Button size="sm" variant="outline" onClick={() => setSearchCompany('')}><RotateCcw className="w-4 h-4 mr-1" />重置</Button>
+            <Button size="sm" variant="outline" onClick={() => { setSearchCompany(''); setDateFrom(''); setDateTo(''); }}><RotateCcw className="w-4 h-4 mr-1" />重置</Button>
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="p-0">
           <div className="p-3 border-b border-light"><Button size="sm" onClick={openCreate}><Plus className="w-4 h-4 mr-1" />新增</Button></div>
+          {loading ? <SkeletonTable rows={3} cols={8} /> : filtered.length === 0 ? <EmptyState title="暂无汇率配置" description="点击「新增」创建第一条汇率记录" action={{ label: '新增', onClick: openCreate }} /> : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -87,9 +100,9 @@ export default function ExchangeRateConfigPage() {
                   <TableCell><Button variant="link" size="sm" onClick={() => openEdit(r)}><Pencil className="w-4 h-4" /></Button></TableCell>
                 </TableRow>
               ))}
-              {filtered.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-tertiary py-8">暂无数据</TableCell></TableRow>}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
 

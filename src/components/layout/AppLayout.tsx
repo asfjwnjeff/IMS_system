@@ -10,7 +10,6 @@ import {
   ChevronRight,
   PanelLeftClose,
   PanelLeft,
-  Search,
 } from 'lucide-react';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {

@@ -10,12 +10,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus, Search, RotateCcw, Eye, Pencil, Trash2 } from 'lucide-react';
+import { SkeletonTable } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export default function ReportClaimsPage() {
   const router = useRouter();
-  const { claims, dispatch } = useApp();
+  const { claims, dispatch, loading: claimsLoading } = useApp();
   const [searchNo, setSearchNo] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [claimResult, setClaimResult] = useState('');
@@ -24,8 +28,10 @@ export default function ReportClaimsPage() {
   const filtered = useMemo(() => claims.filter((c) => {
     if (statusFilter && statusFilter !== 'all' && c.reportStatus !== statusFilter) return false;
     if (searchNo && !c.reportNo?.includes(searchNo) && !c.policyNo?.includes(searchNo)) return false;
+    if (dateFrom && c.reportTime < dateFrom) return false;
+    if (dateTo && c.reportTime > dateTo) return false;
     return true;
-  }), [claims, searchNo, statusFilter]);
+  }), [claims, searchNo, statusFilter, dateFrom, dateTo]);
 
   async function handleConfirm() {
     if (!confirmId || !claimResult) { toast.error('请选择理赔结果'); return; }
@@ -53,8 +59,11 @@ export default function ReportClaimsPage() {
               </SelectContent>
             </Select>
             <Input placeholder="报案编号/保单号" value={searchNo} onChange={(e) => setSearchNo(e.target.value)} className="w-[200px]" />
+            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[150px]" />
+            <span className="text-tertiary">-</span>
+            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[150px]" />
             <Button size="sm"><Search className="w-4 h-4 mr-1" />搜索</Button>
-            <Button size="sm" variant="outline" onClick={() => { setSearchNo(''); setStatusFilter(''); }}><RotateCcw className="w-4 h-4 mr-1" />重置</Button>
+            <Button size="sm" variant="outline" onClick={() => { setSearchNo(''); setStatusFilter(''); setDateFrom(''); setDateTo(''); }}><RotateCcw className="w-4 h-4 mr-1" />重置</Button>
           </div>
         </CardContent>
       </Card>

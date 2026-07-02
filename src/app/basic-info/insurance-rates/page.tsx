@@ -11,12 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Search, RotateCcw, Pencil } from 'lucide-react';
+import { SkeletonTable } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { InsuranceRate } from '@/lib/types';
 
 const emptyForm: Omit<InsuranceRate, 'id'> = { insuranceCompany: '中国人保', rate: 0, effectiveDate: '', expiryDate: '', cargoType: '', status: '启用', cargoValueRMB: 0, agreementNo: '', minCharge: 0, packageType: '', oldNewType: '', remark: '', creator: '管理员', createTime: '' };
 
 export default function InsuranceRateConfigPage() {
-  const { insuranceRates, dispatch } = useApp();
+  const { insuranceRates, dispatch, loading } = useApp();
   const [searchCompany, setSearchCompany] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);

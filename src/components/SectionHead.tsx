@@ -1,10 +1,17 @@
-// 详情/编辑页段落标题 — 蓝色左边框 + 标题
-// 替代 Ant Design 的 Card title 样式
-export function SectionHead({ title }: { title: string }) {
+import { cn } from '@/lib/utils';
+
+interface SectionHeadProps {
+  title: string;
+  action?: React.ReactNode;
+  className?: string;
+}
+
+export function SectionHead({ title, action, className }: SectionHeadProps) {
   return (
-    <div className="flex items-center gap-2.5 mb-4">
-      <span className="block w-[3px] h-4 rounded-sm shrink-0" style={{ backgroundColor: 'var(--blue)' }} />
-      <span className="text-sm font-semibold text-primary">{title}</span>
+    <div className={cn('flex items-center gap-2.5 mb-4', className)}>
+      <span className="block w-[3px] h-4 rounded-sm shrink-0 bg-[var(--accent)]" />
+      <h3 className="text-sm font-semibold text-primary flex-1">{title}</h3>
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }

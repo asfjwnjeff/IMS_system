@@ -38,7 +38,13 @@ export function usePersistedConfig<T extends { key: string; visible: boolean }[]
       try {
         const stored = localStorage.getItem(`ims_${configKey}`);
         if (stored) {
-          setConfig(JSON.parse(stored) as T);
+          const parsed = JSON.parse(stored) as T;
+          // 缓存检测：如果缓存的 key 数量与默认值不同（说明配置结构变了），用默认值
+          if (Array.isArray(parsed) && Array.isArray(defaults) && parsed.length !== defaults.length) {
+            localStorage.removeItem(`ims_${configKey}`);
+          } else {
+            setConfig(parsed);
+          }
         }
       } catch { /* ignore */ }
 
