@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -9,99 +9,260 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnSettings } from '@/components/ColumnSettings';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
 import { usePersistedConfig } from '@/hooks/usePersistedConfig';
 import { toast } from 'sonner';
-import { Plus, Eye, Pencil, MoreHorizontal, Download, Trash2 } from 'lucide-react';
+import { Search, RotateCcw, Download, MoreHorizontal, Eye, Pencil, Trash2, Settings2 } from 'lucide-react';
 import type { InsuranceApplication } from '@/lib/types';
 
-// 默认列定义
-const DEFAULT_COLUMNS = [
-  { key: 'businessRefNo', label: '业务参考号', visible: true },
-  { key: 'insuranceCategory', label: '投保类别', visible: true },
-  { key: 'applicationType', label: '申请类型', visible: true },
-  { key: 'applicantCompany', label: '投保人企业', visible: true },
-  { key: 'customerName', label: '客户名称', visible: true },
-  { key: 'insuredCompany', label: '被保人企业', visible: true },
-  { key: 'approvalStatus', label: '审批状态', visible: true },
-  { key: 'applicationNo', label: '申请编号', visible: false },
-  { key: 'applicationTime', label: '申请时间', visible: true },
-  { key: 'applicantName', label: '申请人', visible: false },
-  { key: 'effectiveStatus', label: '生效状态', visible: false },
-  { key: 'isBackfill', label: '回填状态', visible: false },
-  { key: 'dataSource', label: '数据来源', visible: false },
+// ===== 搜索字段定义 =====
+interface SearchFieldDef { key: string; label: string; type: 'input' | 'select' | 'dateRange'; options?: string[]; width?: number }
+const searchFieldDefs: SearchFieldDef[] = [
+  { key: 'applicationNo', label: '投保单号', type: 'input', width: 150 },
+  { key: 'businessRefNo', label: '业务参考号', type: 'input', width: 150 },
+  { key: 'applicationTime', label: '投保时间', type: 'dateRange', width: 240 },
+  { key: 'approvalStatus', label: '审批状态', type: 'select', options: ['审批通过', '审批拒绝', '审批中', '待发起', '待审核'], width: 130 },
+  { key: 'insurancePolicyStatus', label: '保险公司保单状态', type: 'select', options: ['已承保', '已批改', '待承保'], width: 150 },
+  { key: 'policyNo', label: '保单单号', type: 'input', width: 150 },
+  { key: 'applicantCompany', label: '投保人企业名称', type: 'input', width: 180 },
+  { key: 'insuredCompany', label: '被保人企业名称', type: 'input', width: 180 },
+  { key: 'goodsNameCN', label: '中文商品名称', type: 'input', width: 180 },
+  { key: 'insuranceCompany', label: '保险公司名称', type: 'input', width: 150 },
+  { key: 'dataSource', label: '数据来源', type: 'select', options: ['fms', 'cos'], width: 100 },
 ];
 
-const statusColor: Record<string, 'success' | 'warning' | 'secondary' | 'destructive'> = {
-  '审批通过': 'success', '审批拒绝': 'destructive', '审批中': 'warning', '已确认': 'success',
+// ===== 默认搜索字段 =====
+const defaultSearchFields = [
+  { key: 'applicationNo', visible: true, order: 0 },
+  { key: 'businessRefNo', visible: true, order: 1 },
+  { key: 'applicationTime', visible: true, order: 2 },
+  { key: 'approvalStatus', visible: false, order: 3 },
+  { key: 'insurancePolicyStatus', visible: false, order: 4 },
+  { key: 'policyNo', visible: false, order: 5 },
+  { key: 'applicantCompany', visible: false, order: 6 },
+  { key: 'insuredCompany', visible: true, order: 7 },
+  { key: 'goodsNameCN', visible: false, order: 8 },
+  { key: 'insuranceCompany', visible: false, order: 9 },
+  { key: 'dataSource', visible: false, order: 10 },
+];
+
+// ===== 所有表格列 33列 =====
+const allColumns = [
+  { key: 'id', title: '序号', width: 50, align: 'center' as const },
+  { key: 'businessRefNo', title: '业务参考号', width: 180, isLink: true },
+  { key: 'applicationType', title: '申请类型', width: 100, isTypeTag: true },
+  { key: 'approvalStatus', title: '审核状态', width: 90, isStatusTag: true },
+  { key: 'documentStatus', title: '文档状态', width: 80 },
+  { key: 'approvalRemark', title: '审批备注', width: 150, ellipsis: true },
+  { key: 'insurancePolicyStatus', title: '保险公司保单状态', width: 120 },
+  { key: 'insuranceCorrectionStatus', title: '保险公司批改状态', width: 120 },
+  { key: 'applicationNo', title: '投保单号', width: 150 },
+  { key: 'applicationTime', title: '投保时间', width: 160 },
+  { key: 'applicantCompany', title: '投保人企业名称', width: 200, ellipsis: true },
+  { key: 'goodsNameCN', title: '中文商品名称', width: 200, ellipsis: true },
+  { key: 'currencyName', title: '币制中文名称', width: 100 },
+  { key: 'invoiceAmount', title: '发票金额', width: 110, align: 'right' as const, isAmount: true },
+  { key: 'estimatedInsuranceAmount', title: '预计保险金额', width: 120, align: 'right' as const, isAmount: true },
+  { key: 'markupRatio', title: '加成比例', width: 140 },
+  { key: 'estimatedPremium', title: '预计保费', width: 100, align: 'right' as const, isPremium: true },
+  { key: 'actualPremium', title: '实际保费', width: 100, align: 'right' as const, isPremium: true },
+  { key: 'applicantName', title: '投保申请人姓名', width: 110 },
+  { key: 'insuranceCompany', title: '保险公司名称', width: 100 },
+  { key: 'cosOrderStatus', title: 'COS订单状态', width: 100 },
+  { key: 'insuranceCategory', title: '投保类别', width: 90 },
+  { key: 'transitPort', title: '途径港', width: 180, ellipsis: true },
+  { key: 'carriageType', title: '车厢类型', width: 80 },
+  { key: 'packageType', title: '包装种类', width: 200, ellipsis: true },
+  { key: 'quantity', title: '件数', width: 60, align: 'right' as const },
+  { key: 'insuredCompany', title: '被保人企业名称', width: 200, ellipsis: true },
+  { key: 'policyNo', title: '保单单号', width: 200 },
+  { key: 'customerName', title: '客户名称', width: 200, ellipsis: true },
+  { key: 'effectiveStatus', title: '生效状态', width: 80 },
+  { key: 'isBackfill', title: '是否回填', width: 90 },
+  { key: 'dataSource', title: '数据来源', width: 70 },
+  { key: 'correctionActualPremium', title: '批改实际保费', width: 110, align: 'right' as const, isPremium: true },
+];
+
+const columnLabelMap: Record<string, string> = Object.fromEntries(allColumns.map((c) => [c.key, c.title]));
+
+const defaultColumnFields = allColumns.map((c, i) => ({ key: c.key, visible: true, order: i }));
+
+// 审批状态颜色
+const statusColorMap: Record<string, 'success' | 'warning' | 'secondary' | 'destructive' | 'default'> = {
+  '审批通过': 'success', '审批拒绝': 'destructive', '审批中': 'warning', '待审核': 'warning', '待发起': 'secondary', '已确认': 'success',
 };
 
 export default function InsuranceApplicationPage() {
   const router = useRouter();
   const { applications, dispatch } = useApp();
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
+  const [searchValues, setSearchValues] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<'latest' | 'all'>('latest');
+  const [searchPanelOpen, setSearchPanelOpen] = useState(false);
 
-  const { config: columns, toggle, reorder, moveToTop, reset } = usePersistedConfig('ims_table_columns', DEFAULT_COLUMNS);
+  // 搜索字段配置
+  const searchConfig = usePersistedConfig('ims_search_fields', defaultSearchFields);
+  // 表格列配置
+  const columnConfig = usePersistedConfig('ims_table_columns', defaultColumnFields);
 
+  // 回填弹窗
+  const [backfillOpen, setBackfillOpen] = useState(false);
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [currentRecord, setCurrentRecord] = useState<InsuranceApplication | null>(null);
+
+  // 过滤
   const filtered = useMemo(() => {
     return applications.filter((a) => {
       if (viewMode === 'latest' && !a.isLatest) return false;
-      if (statusFilter && statusFilter !== '全部' && a.approvalStatus !== statusFilter) return false;
-      if (typeFilter && typeFilter !== '全部' && a.applicationType !== typeFilter) return false;
-      if (search) {
-        const s = search.toLowerCase();
-        return (
-          a.businessRefNo?.toLowerCase().includes(s) ||
-          a.customerName?.toLowerCase().includes(s) ||
-          a.applicantCompany?.toLowerCase().includes(s) ||
-          a.applicationNo?.toLowerCase().includes(s)
-        );
+      for (const [key, val] of Object.entries(searchValues)) {
+        if (!val) continue;
+        const v = String(val).toLowerCase();
+        const fieldVal = getFieldString(a, key);
+        if (!fieldVal.toLowerCase().includes(v)) return false;
       }
       return true;
     });
-  }, [applications, search, statusFilter, typeFilter, viewMode]);
+  }, [applications, viewMode, searchValues]);
 
-  const visibleColumns = columns.filter((c) => c.visible);
+  const visibleColumns = columnConfig.config.filter((c) => c.visible);
 
-  async function handleDelete(id: string) {
-    if (!confirm('确定删除？')) return;
-    await fetch(`/api/applications?id=${id}`, { method: 'DELETE' });
-    dispatch({ type: 'DELETE_APPLICATION', id });
-    toast.success('已删除');
-  }
-
+  // ===== 渲染表格单元格 =====
   function renderCell(app: InsuranceApplication, colKey: string) {
-    const val = app[colKey as keyof InsuranceApplication];
-    if (colKey === 'approvalStatus') return <Badge variant={statusColor[app.approvalStatus] || 'secondary'}>{app.approvalStatus}</Badge>;
-    if (colKey === 'applicationType') return <Badge variant="outline">{app.applicationType}</Badge>;
-    if (colKey === 'isBackfill') return <Badge variant={app.isBackfill === '已经回填' ? 'success' : 'secondary'}>{app.isBackfill || '-'}</Badge>;
-    return <span className="text-sm">{String(val ?? '-')}</span>;
+    // 获取 JSON 段落内的字段值
+    const val = getFieldString(app, colKey);
+    const appAny = app as unknown as Record<string, unknown>;
+
+    // 业务参考号 — 可点击
+    if (colKey === 'businessRefNo') {
+      return (
+        <span>
+          <button className="text-blue-600 hover:underline text-sm" onClick={() => router.push(`/policy-manage/applications/${app.id}`)}>
+            {app.businessRefNo}
+          </button>
+          {!app.isLatest && <Badge variant="secondary" className="ml-1.5 text-[10px] opacity-60">历史版本</Badge>}
+        </span>
+      );
+    }
+    // 申请类型
+    if (colKey === 'applicationType') {
+      return <Badge variant={app.applicationType === '批改申请' ? 'warning' : 'default'}>{app.applicationType || '-'}</Badge>;
+    }
+    // 审核状态
+    if (colKey === 'approvalStatus') {
+      return <Badge variant={statusColorMap[app.approvalStatus] || 'secondary'}>{app.approvalStatus || '-'}</Badge>;
+    }
+    // 金额类
+    if (colKey === 'invoiceAmount' || colKey === 'estimatedInsuranceAmount') {
+      const n = parseFloat(val);
+      return <span className="text-sm tabular-nums">{isNaN(n) ? '-' : n.toLocaleString()}</span>;
+    }
+    if (colKey === 'estimatedPremium' || colKey === 'actualPremium' || colKey === 'correctionActualPremium') {
+      const n = parseFloat(val);
+      return <span className="text-sm tabular-nums">{isNaN(n) ? (colKey === 'correctionActualPremium' ? '' : '-') : n.toFixed(2)}</span>;
+    }
+    // 回填状态
+    if (colKey === 'isBackfill') {
+      return <Badge variant={val === '已经回填' ? 'success' : 'secondary'}>{val || '-'}</Badge>;
+    }
+
+    return <span className={cn('text-sm', colKey === 'id' ? '' : '')}>{val || '-'}</span>;
   }
 
-  async function handleExport() {
-    const res = await fetch('/api/export?type=applications');
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'applications.xlsx'; a.click();
-    URL.revokeObjectURL(url);
-    toast.success('导出成功');
+  // ===== 更多操作菜单项 =====
+  interface ActionItem { label: string; onClick: () => void; danger?: boolean }
+  type ActionItems = (ActionItem | 'separator')[];
+
+  function getMoreActions(app: InsuranceApplication): ActionItems {
+    const s = app.approvalStatus;
+    const t = app.applicationType;
+    const isCorrection = t === '批改申请';
+    const items: ActionItems = [];
+
+    if (!app.isLatest) {
+      return [{ label: '详情查看', onClick: () => router.push(`/policy-manage/applications/${app.id}`) }];
+    }
+
+    if (s === '待发起' || s === '审批拒绝') {
+      items.push({ label: '编辑', onClick: () => router.push(`/policy-manage/applications/${app.id}/edit`) });
+    }
+    if (s === '待发起') {
+      items.push({ label: '删除', onClick: () => { if (confirm('确定要删除投保单 ' + app.businessRefNo + ' 吗？')) { fetch('/api/applications?id=' + app.id, { method: 'DELETE' }); dispatch({ type: 'DELETE_APPLICATION', id: app.id }); toast.success('已删除'); } }, danger: true });
+      items.push({ label: '保险费率选择', onClick: () => toast.info('保险费率选择 — 待开发') });
+    }
+    if (s === '待发起' || s === '审批拒绝') {
+      items.push({ label: '发起审批', onClick: () => toast.success('已发起审批') });
+    }
+    if (s === '审批中' || s === '待审核') {
+      items.push({ label: '撤销审核', onClick: () => toast.success('已撤销审核，已通知所有审批人') });
+    }
+    if (s === '审批通过') {
+      if (isCorrection) {
+        items.push({ label: '批改信息回填', onClick: () => { setCurrentRecord(app); setCorrectionOpen(true); } });
+      } else {
+        items.push({ label: '保单信息回填', onClick: () => { setCurrentRecord(app); setBackfillOpen(true); } });
+      }
+      items.push({ label: '缴费账单', onClick: () => toast.info('缴费账单 — 待开发') });
+      items.push({ label: '发票', onClick: () => toast.info('发票 — 待开发') });
+      if (!isCorrection) items.push({ label: '发起批改', onClick: () => toast.info('发起批改 — 待开发') });
+    }
+
+    return items;
+  }
+
+  // ===== 搜索字段渲染 =====
+  const visibleSearchFields = searchConfig.config.filter((f) => f.visible);
+
+  function renderSearchField(fkey: string) {
+    const def = searchFieldDefs.find((d) => d.key === fkey);
+    if (!def) return null;
+    const value = searchValues[fkey] || '';
+
+    if (def.type === 'input') {
+      return (
+        <Input
+          key={fkey}
+          placeholder={def.label}
+          value={value}
+          onChange={(e) => setSearchValues((prev) => ({ ...prev, [fkey]: e.target.value }))}
+          className="w-[160px]"
+        />
+      );
+    }
+    if (def.type === 'select' && def.options) {
+      return (
+        <Select key={fkey} value={value || 'all'} onValueChange={(v) => setSearchValues((prev) => ({ ...prev, [fkey]: v === 'all' ? '' : v }))}>
+          <SelectTrigger className="w-[140px]"><SelectValue placeholder={def.label} /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部</SelectItem>
+            {def.options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      );
+    }
+    return null;
+  }
+
+  function handleExport(type: string) {
+    toast.info(`${type} — 导出功能`);
+    if (type === 'list') {
+      fetch('/api/export?type=applications').then((r) => r.blob()).then((b) => {
+        const url = URL.createObjectURL(b);
+        const a = document.createElement('a'); a.href = url; a.download = 'applications.xlsx'; a.click();
+        URL.revokeObjectURL(url); toast.success('导出成功');
+      }).catch(() => toast.error('导出失败'));
+    }
   }
 
   return (
     <div className="max-w-[1440px] mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold">投保申请表</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport}><Download className="w-4 h-4 mr-1" />导出</Button>
-          <ColumnSettings columns={columns} onToggle={toggle} onReorder={reorder} onMoveToTop={moveToTop} onReset={reset} />
-        </div>
       </div>
 
       <Card>
@@ -109,35 +270,72 @@ export default function InsuranceApplicationPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">查询条件</CardTitle>
             <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
-              <button className={`px-3 py-1 text-xs rounded-md transition-colors ${viewMode === 'latest' ? 'bg-background shadow-sm' : ''}`} onClick={() => setViewMode('latest')}>当前有效</button>
-              <button className={`px-3 py-1 text-xs rounded-md transition-colors ${viewMode === 'all' ? 'bg-background shadow-sm' : ''}`} onClick={() => setViewMode('all')}>全部记录</button>
+              <button className={`px-3 py-1 text-xs rounded-md transition-colors ${viewMode === 'latest' ? 'bg-background shadow-sm font-medium' : ''}`} onClick={() => setViewMode('latest')}>当前有效</button>
+              <button className={`px-3 py-1 text-xs rounded-md transition-colors ${viewMode === 'all' ? 'bg-background shadow-sm font-medium' : ''}`} onClick={() => setViewMode('all')}>全部记录</button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-3 flex-wrap">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32"><SelectValue placeholder="审批状态" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="全部">全部</SelectItem>
-                <SelectItem value="审批通过">审批通过</SelectItem>
-                <SelectItem value="审批中">审批中</SelectItem>
-                <SelectItem value="审批拒绝">审批拒绝</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-32"><SelectValue placeholder="申请类型" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="全部">全部</SelectItem>
-                <SelectItem value="新增投保单">新增投保单</SelectItem>
-                <SelectItem value="批改申请">批改申请</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input placeholder="搜索业务参考号/客户/投保人/申请编号" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs" />
+          {/* 搜索字段行 */}
+          <div className="flex flex-wrap gap-2 items-center mb-3">
+            {visibleSearchFields.map((f) => renderSearchField(f.key))}
           </div>
+
+          {/* 工具栏 */}
+          <div className="flex justify-between items-center">
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => { /* search already live-filtered */ }}><Search className="w-4 h-4 mr-1" />搜索</Button>
+              <Button size="sm" variant="outline" onClick={() => setSearchValues({})}><RotateCcw className="w-4 h-4 mr-1" />重置</Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="outline"><Download className="w-4 h-4 mr-1" />导出</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleExport('list')}>列表导出</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('pingan')}>平安导出</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('picc1')}>PICC进出口货运</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('picc2')}>PICC国内运输</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant={searchPanelOpen ? 'default' : 'outline'} onClick={() => setSearchPanelOpen(!searchPanelOpen)}>
+                <Settings2 className="w-4 h-4 mr-1" />自定义查询
+              </Button>
+              <ColumnSettings columns={columnConfig.config} onToggle={columnConfig.toggle} onReorder={columnConfig.reorder} onMoveToTop={columnConfig.moveToTop} onReset={columnConfig.reset} />
+            </div>
+          </div>
+
+          {/* 自定义查询面板 */}
+          {searchPanelOpen && (
+            <div className="mt-3 p-3 border-2 border-blue-500 rounded-md bg-background">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold">自定义查询字段</span>
+                <div className="flex gap-1">
+                  <Button size="sm" onClick={() => setSearchPanelOpen(false)}>确定</Button>
+                  <Button size="sm" variant="outline" onClick={searchConfig.reset}>重置默认</Button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[...searchConfig.config].sort((a, b) => a.order - b.order).map((f) => {
+                  const label = searchFieldDefs.find((d) => d.key === f.key)?.label || f.key;
+                  return (
+                    <span key={f.key} onClick={() => searchConfig.toggle(f.key)}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs cursor-pointer select-none transition-colors ${
+                        f.visible ? 'border border-blue-300 bg-blue-50 text-blue-600' : 'border border-gray-200 bg-white text-gray-600'
+                      }`}
+                    >
+                      {f.visible ? '✓' : '+'} {label}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
+      {/* 表格 */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -145,45 +343,126 @@ export default function InsuranceApplicationPage() {
               <TableHeader>
                 <TableRow>
                   {visibleColumns.map((c) => (
-                    <TableHead key={c.key} className="whitespace-nowrap">{c.label}</TableHead>
+                    <TableHead key={c.key} className={`whitespace-nowrap ${c.key === 'id' ? 'text-center' : ''}`}
+                      style={{ width: allColumns.find((x) => x.key === c.key)?.width || 'auto', textAlign: allColumns.find((x) => x.key === c.key)?.align || 'left' }}
+                    >{columnLabelMap[c.key]}</TableHead>
                   ))}
-                  <TableHead className="w-[60px]">操作</TableHead>
+                  <TableHead className="w-[80px] text-center sticky right-0 bg-white dark:bg-card">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((app) => (
-                  <TableRow key={app.id}>
+                  <TableRow key={app.id} className={!app.isLatest ? 'opacity-50' : ''}>
                     {visibleColumns.map((c) => (
-                      <TableCell key={c.key}>{renderCell(app, c.key)}</TableCell>
+                      <TableCell key={c.key} style={{ textAlign: allColumns.find((x) => x.key === c.key)?.align || 'left' }}>
+                        {renderCell(app, c.key)}
+                      </TableCell>
                     ))}
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon"><MoreHorizontal className="w-4 h-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => router.push(`/policy-manage/applications/${app.id}`)}><Eye className="w-4 h-4 mr-2" />查看详情</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.push(`/policy-manage/applications/${app.id}/edit`)}><Pencil className="w-4 h-4 mr-2" />编辑</DropdownMenuItem>
-                          {app.approvalStatus === '审批中' && (
-                            <DropdownMenuItem onClick={() => handleDelete(app.id)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" />删除</DropdownMenuItem>
+                    <TableCell className="sticky right-0 bg-white dark:bg-card">
+                      {!app.isLatest ? (
+                        <Button variant="link" size="sm" onClick={() => router.push(`/policy-manage/applications/${app.id}`)}>查看</Button>
+                      ) : (
+                        <div className="flex items-center gap-0">
+                          {(app.approvalStatus === '待发起' || app.approvalStatus === '审批拒绝') && (
+                            <Button variant="link" size="sm" onClick={() => router.push(`/policy-manage/applications/${app.id}/edit`)}>编辑</Button>
                           )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          {app.approvalStatus === '待发起' && (
+                            <Button variant="link" size="sm" className="text-destructive" onClick={() => { if (confirm('删除？')) { fetch('/api/applications?id=' + app.id, { method: 'DELETE' }); dispatch({ type: 'DELETE_APPLICATION', id: app.id }); toast.success('已删除'); } }}>删除</Button>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="link" size="sm">更多<MoreHorizontal className="w-3.5 h-3.5 ml-0.5" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {getMoreActions(app).map((item, i) =>
+                                item === 'separator' ? (
+                                  <DropdownMenuSeparator key={i} />
+                                ) : (
+                                  <DropdownMenuItem key={i} onClick={item.onClick} className={item.danger ? 'text-destructive' : ''}>
+                                    {item.label}
+                                  </DropdownMenuItem>
+                                )
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
                 {filtered.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={visibleColumns.length + 1} className="text-center text-tertiary py-12">
-                      暂无数据
-                    </TableCell>
-                  </TableRow>
+                  <TableRow><TableCell colSpan={visibleColumns.length + 1} className="text-center text-tertiary py-12">暂无数据</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
+
+      {/* 保单信息回填弹窗 */}
+      <Dialog open={backfillOpen} onOpenChange={setBackfillOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>保单信息回填</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div><label className="text-sm">保险公司名称 *</label>
+              <Select defaultValue={currentRecord?.backfillInfo?.insuranceCompany || ''}>
+                <SelectTrigger><SelectValue placeholder="请选择" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="中国人保">CO00056870 - 中国人保</SelectItem>
+                  <SelectItem value="中国平安">中国平安</SelectItem>
+                  <SelectItem value="人保财险">人保财险</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><label className="text-sm">保单单号</label><Input placeholder="请输入保单单号" maxLength={100} /></div>
+            <div><label className="text-sm">实际保费</label><Input placeholder="请输入保费" /></div>
+            <div><label className="text-sm">保单附件</label><Input placeholder="请上传 大小不超过 5MB 格式为 doc/docx/pdf/xls/xlsx/jpg/png/jpeg 的文件" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBackfillOpen(false)}>取消</Button>
+            <Button onClick={() => { toast.success('回填成功'); setBackfillOpen(false); }}>确认</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 批改信息回填弹窗 */}
+      <Dialog open={correctionOpen} onOpenChange={setCorrectionOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>批改信息回填</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div><label className="text-sm">保险公司批改状态</label>
+              <Select defaultValue={currentRecord?.correctionInfo?.insuranceCorrectionStatus || ''}>
+                <SelectTrigger><SelectValue placeholder="请选择" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="已批改">已批改</SelectItem>
+                  <SelectItem value="待批改">待批改</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><label className="text-sm">保险公司批改编号</label><Input placeholder="请输入批改编号" /></div>
+            <div><label className="text-sm">批改后实际保费</label><Input placeholder="请输入批改后实际保费" /></div>
+            <div><label className="text-sm">附件</label><Input placeholder="请上传 大小不超过 5MB 格式为 doc/docx/pdf/xls/xlsx/jpg/png/jpeg 的文件" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCorrectionOpen(false)}>取消</Button>
+            <Button onClick={() => { toast.success('回填成功'); setCorrectionOpen(false); }}>确认</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+}
+
+// ===== 工具函数 =====
+import { cn } from '@/lib/utils';
+import { SECTION_JSON_MAP } from '@/lib/field-defs';
+
+function getFieldString(app: InsuranceApplication, key: string): string {
+  const sectionKey = SECTION_JSON_MAP[key];
+  if (!sectionKey || sectionKey === 'root') {
+    const val = (app as unknown as Record<string, unknown>)[key];
+    return val == null ? '' : String(val);
+  }
+  const sectionData = (app as unknown as Record<string, unknown>)[sectionKey] as Record<string, unknown> | undefined;
+  if (!sectionData) return '';
+  const val = sectionData[key];
+  return val == null ? '' : String(val);
 }

@@ -30,7 +30,10 @@ function findWasmFile(): string {
 
 let dbInstance: ReturnType<typeof drizzle> | null = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let sqlDb: any = null;
+let rawSqlDb: any = null;
+
+/** 获取底层 sql.js Database，用于执行原始 DDL */
+export function getRawDb() { return rawSqlDb; }
 
 export async function getDb() {
   if (dbInstance) return dbInstance;
@@ -41,23 +44,23 @@ export async function getDb() {
 
   if (fs.existsSync(DB_PATH)) {
     const buffer = fs.readFileSync(DB_PATH);
-    sqlDb = new SQL.Database(buffer);
+    rawSqlDb = new SQL.Database(buffer);
   } else {
-    sqlDb = new SQL.Database();
+    rawSqlDb = new SQL.Database();
   }
 
   // 显式设置 UTF-8 编码，防止中文乱码
-  sqlDb.run('PRAGMA encoding = "UTF-8"');
+  rawSqlDb.run('PRAGMA encoding = "UTF-8"');
 
-  dbInstance = drizzle(sqlDb, { schema });
+  dbInstance = drizzle(rawSqlDb, { schema });
   return dbInstance;
 }
 
 export function saveDb() {
-  if (!sqlDb) return;
+  if (!rawSqlDb) return;
   const dir = path.dirname(DB_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const data = sqlDb.export();
+  const data = rawSqlDb.export();
   fs.writeFileSync(DB_PATH, Buffer.from(data));
 }
 

@@ -12,8 +12,9 @@ import { cn } from '@/lib/utils';
 
 export interface ColumnItem {
   key: string;
-  label: string;
+  label?: string;
   visible: boolean;
+  order?: number;
 }
 
 interface ColumnSettingsProps {
@@ -22,9 +23,10 @@ interface ColumnSettingsProps {
   onReorder: (from: number, to: number) => void;
   onMoveToTop: (key: string) => void;
   onReset: () => void;
+  labelMap?: Record<string, string>;
 }
 
-export function ColumnSettings({ columns, onToggle, onReorder, onMoveToTop, onReset }: ColumnSettingsProps) {
+export function ColumnSettings({ columns, onToggle, onReorder, onMoveToTop, onReset, labelMap }: ColumnSettingsProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const handleDragStart = useCallback((index: number) => {
@@ -82,7 +84,7 @@ export function ColumnSettings({ columns, onToggle, onReorder, onMoveToTop, onRe
                 htmlFor={`col-${col.key}`}
                 className="text-sm flex-1 cursor-pointer truncate"
               >
-                {col.label}
+                {labelMap?.[col.key] || col.label || col.key}
               </label>
               <button
                 onClick={() => onMoveToTop(col.key)}
