@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbo -p 5002",
     "build": "next build",
-    "start": "next start -p 5002",
+    "start": "next start -p ${PORT:-5002}",
     "lint": "eslint",
     "ts-check": "tsc -p tsconfig.json --noEmit"
   },
