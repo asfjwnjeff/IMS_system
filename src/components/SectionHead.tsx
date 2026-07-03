@@ -9,8 +9,8 @@ interface SectionHeadProps {
 export function SectionHead({ title, action, className }: SectionHeadProps) {
   return (
     <div className={cn('flex items-center gap-2.5 mb-4', className)}>
-      <span className="block w-[3px] h-4 rounded-sm shrink-0 bg-[var(--accent)]" />
-      <h3 className="text-sm font-semibold text-primary flex-1">{title}</h3>
+      <span className="block w-[3px] h-[18px] rounded-full shrink-0 bg-[var(--accent)]" />
+      <h3 className="text-[15px] font-semibold text-[var(--text-primary)] flex-1">{title}</h3>
       {action && <div className="shrink-0">{action}</div>}
     </div>
   );

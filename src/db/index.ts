@@ -109,8 +109,7 @@ export function buildDbData(body: Record<string, unknown>, isNew: boolean): Reco
 }
 
 function getTablePrefix(body: Record<string, unknown>): string {
-  // 根据 body 中的特征字段判断表类型
-  if ('businessRefNo' in body || 'business_ref_no' in body) return 'app';
+  if ('jobidref' in body || 'jobidref' in body) return 'app';
   if ('reportNo' in body || 'report_no' in body) return 'clm';
   if ('exchangeRate' in body || 'exchange_rate' in body) return 'exr';
   if ('rateCode' in body || ('rate' in body && 'cargoType' in body)) return 'insr';

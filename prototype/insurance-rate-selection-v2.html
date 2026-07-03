@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280, initial-scale=1.0">
+<title>保险产品费率选择 — IMS 原型 v2.1</title>
+<style>
+/* ============================================================
+   DESIGN SYSTEM — Minimalist B2B SaaS
+   ============================================================ */
+:root {
+  --gray-25: #fcfcfd; --gray-50: #f9fafb; --gray-100: #f2f4f7;
+  --gray-200: #eaecf0; --gray-300: #d0d5dd; --gray-400: #98a2b3;
+  --gray-500: #667085; --gray-600: #475467; --gray-700: #344054;
+  --gray-800: #1d2939; --gray-900: #101828;
+  --blue-50: #eff8ff; --blue-100: #d1e9ff; --blue-500: #2e90fa; --blue-600: #1570ef; --blue-700: #175cd3;
+  --green-50: #ecfdf3; --green-600: #039855; --green-700: #027a48;
+  --amber-50: #fffaeb; --amber-500: #f79009; --amber-600: #dc6803; --amber-700: #b54708;
+  --red-50: #fef3f2; --red-500: #f04438; --red-600: #d92d20;
+  --white: #ffffff;
+  --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px;
+  --shadow-xs: 0 1px 2px rgba(16,24,40,.05);
+  --shadow-sm: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+  --shadow-md: 0 4px 8px -2px rgba(16,24,40,.08), 0 2px 4px -2px rgba(16,24,40,.04);
+  --transition: 0.15s ease;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--gray-25); color: var(--gray-800); -webkit-font-smoothing: antialiased;
+  min-width: 1280px; display: flex; min-height: 100vh; font-size: 14px; line-height: 1.5;
+}
+
+/* ===== Sidebar — Dark & Minimal ===== */
+.sidebar {
+  width: 220px; min-width: 220px; background: var(--gray-900);
+  display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,.06);
+}
+.sidebar-logo {
+  height: 56px; display: flex; align-items: center; padding: 0 20px; gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.sidebar-logo .logo-mark { width: 28px; height: 28px; background: var(--blue-500); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; }
+.sidebar-logo span { color: #fff; font-size: 14px; font-weight: 600; letter-spacing: .3px; }
+.sidebar-menu { flex:1; padding: 12px 0; overflow-y: auto; }
+.menu-item, .menu-sub {
+  display: flex; align-items: center; gap: 10px; padding: 8px 20px;
+  color: var(--gray-400); cursor: pointer; font-size: 13px; transition: all var(--transition);
+  border: none; background: none; width: 100%; text-align: left; font-family: inherit;
+}
+.menu-item:hover, .menu-sub:hover { color: var(--gray-200); background: rgba(255,255,255,.04); }
+.menu-item.active, .menu-sub.active { color: #fff; background: rgba(255,255,255,.08); font-weight: 500; }
+.menu-group { margin-bottom: 1px; }
+.menu-group-title {
+  display: flex; align-items: center; gap: 10px; padding: 8px 20px;
+  color: var(--gray-500); font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .5px; cursor: pointer; user-select: none;
+}
+.menu-group-title .arrow { margin-left: auto; font-size: 8px; transition: transform .2s; opacity: .5; }
+.menu-group-title.expanded .arrow { transform: rotate(90deg); }
+.menu-group-children { display: none; }
+.menu-group-children.show { display: block; }
+.menu-sub { padding-left: 48px; font-size: 13px; }
+.menu-icon { width: 16px; text-align: center; font-size: 14px; opacity: .7; }
+
+/* ===== Main Area ===== */
+.main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.header {
+  height: 48px; background: var(--white); border-bottom: 1px solid var(--gray-200);
+  display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.breadcrumb { font-size: 13px; color: var(--gray-400); }
+.breadcrumb span { color: var(--gray-600); }
+.breadcrumb .sep { margin: 0 6px; color: var(--gray-300); }
+.header-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--gray-600); }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--gray-100); color: var(--gray-600); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; }
+.content { padding: 20px 24px; flex: 1; overflow-y: auto; }
+
+/* ===== Common Components — Minimal ===== */
+.card {
+  background: var(--white); border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200); margin-bottom: 16px;
+}
+.card-header {
+  padding: 14px 20px; border-bottom: 1px solid var(--gray-100);
+  font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center;
+}
+.card-body { padding: 20px; }
+.card-body.inset { padding: 0; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 34px; padding: 0 14px; font-size: 13px; font-weight: 500;
+  border-radius: var(--radius-sm); cursor: pointer; border: 1px solid var(--gray-300);
+  background: var(--white); color: var(--gray-700); transition: all var(--transition);
+  font-family: inherit; white-space: nowrap;
+}
+.btn:hover { background: var(--gray-50); border-color: var(--gray-400); }
+.btn-primary { background: var(--gray-900); border-color: var(--gray-900); color: #fff; }
+.btn-primary:hover { background: var(--gray-800); border-color: var(--gray-800); }
+.btn-ghost { border-color: transparent; background: transparent; color: var(--gray-500); }
+.btn-ghost:hover { background: var(--gray-50); color: var(--gray-700); }
+.btn-link { border: none; background: none; color: var(--gray-600); padding: 4px 8px; height: auto; font-weight: 400; }
+.btn-link:hover { color: var(--gray-900); background: var(--gray-50); border-radius: 4px; }
+.btn-link.danger { color: var(--red-500); }
+.btn-link.danger:hover { color: var(--red-600); background: var(--red-50); }
+.btn-sm { height: 30px; padding: 0 10px; font-size: 12px; }
+.btn-lg { height: 40px; padding: 0 20px; font-size: 14px; }
+.btn-group { display: flex; gap: 8px; align-items: center; }
+
+/* Inputs */
+.input, .select, .textarea {
+  height: 34px; padding: 0 10px; border: 1px solid var(--gray-300); border-radius: var(--radius-sm);
+  font-size: 13px; color: var(--gray-800); background: var(--white); outline: none;
+  font-family: inherit; width: 100%; transition: all var(--transition);
+}
+.input::placeholder, .textarea::placeholder { color: var(--gray-400); }
+.input:hover, .select:hover, .textarea:hover { border-color: var(--gray-400); }
+.input:focus, .select:focus, .textarea:focus { border-color: var(--gray-900); box-shadow: 0 0 0 3px rgba(16,24,40,.06); }
+.select {
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center; padding-right: 28px;
+}
+.textarea { height: auto; min-height: 72px; resize: vertical; padding: 8px 10px; line-height: 1.5; }
+
+/* Form */
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; font-weight: 500; color: var(--gray-600); margin-bottom: 5px; }
+.form-label .req { color: var(--red-500); margin-left: 2px; }
+.form-row { display: flex; gap: 14px; }
+.form-row > * { flex: 1; }
+.form-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px 20px; }
+.form-grid.cols-2 { grid-template-columns: repeat(2,1fr); }
+.form-col-span-2 { grid-column: span 2; }
+
+/* Tags */
+.tag {
+  display: inline-flex; align-items: center; height: 22px; padding: 0 8px;
+  border-radius: 4px; font-size: 11px; font-weight: 500; white-space: nowrap;
+}
+.tag-neutral { color: var(--gray-600); background: var(--gray-100); }
+.tag-blue { color: var(--blue-700); background: var(--blue-50); }
+.tag-green { color: var(--green-700); background: var(--green-50); }
+.tag-amber { color: var(--amber-700); background: var(--amber-50); }
+.tag-red { color: var(--red-600); background: var(--red-50); }
+
+/* Data Table — Clean */
+.table-wrap { overflow-x: auto; }
+table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table thead th {
+  background: var(--gray-50); font-size: 11px; font-weight: 600; color: var(--gray-500);
+  text-transform: uppercase; letter-spacing: .3px; padding: 10px 14px;
+  border-bottom: 1px solid var(--gray-200); text-align: left; white-space: nowrap;
+}
+.data-table tbody td { padding: 10px 14px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); white-space: nowrap; }
+.data-table tbody tr:hover td { background: var(--gray-25); }
+.data-table a { color: var(--gray-900); cursor: pointer; text-decoration: none; font-weight: 500; }
+.data-table a:hover { color: var(--blue-600); }
+.data-table .text-right { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table .text-center { text-align: center; }
+
+/* Section head */
+.section-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.section-head-dot { width: 8px; height: 8px; border-radius: 2px; background: var(--gray-900); flex-shrink: 0; }
+.section-head-title { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding: 12px 20px; font-size: 13px; color: var(--gray-500); border-top: 1px solid var(--gray-100); }
+.pagination .total { margin-right: auto; }
+.pg-btn { width: 32px; height: 32px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); background: var(--white); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray-600); }
+.pg-btn:hover { border-color: var(--gray-400); }
+.pg-btn.active { background: var(--gray-900); border-color: var(--gray-900); color: #fff; }
+
+/* Toast */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2000;
+  padding: 10px 20px; border-radius: var(--radius-md); color: #fff; font-size: 13px;
+  box-shadow: var(--shadow-md); pointer-events: none; opacity: 0; transition: opacity .25s;
+  background: var(--gray-900);
+}
+.toast.show { opacity: 1; }
+.toast-error { background: var(--red-500); }
+
+/* Version bar */
+.version-bar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 10px 16px;
+  background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-md);
+  font-size: 12px; color: var(--gray-600);
+}
+
+/* Segmented Control */
+.segmented { display: inline-flex; border-radius: var(--radius-sm); background: var(--gray-100); padding: 2px; }
+.seg-option { padding: 5px 12px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; background: none; font-family: inherit; border-radius: 4px; color: var(--gray-500); transition: all var(--transition); }
+.seg-option.active { background: var(--white); color: var(--gray-800); box-shadow: var(--shadow-xs); }
+
+/* ============================================================
+   ★ RATE SELECTION DIALOG — Minimalist Business Style
+   ============================================================ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(16,24,40,.4);
+  z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--white); border-radius: var(--radius-lg); box-shadow: 0 20px 40px rgba(16,24,40,.15);
+  max-width: 720px; width: 92%; max-height: 84vh; display: flex; flex-direction: column;
+}
+.modal-header {
+  padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--gray-100);
+}
+.modal-header h3 { font-size: 15px; font-weight: 600; color: var(--gray-900); }
+.modal-close {
+  width: 28px; height: 28px; border: none; background: none; cursor: pointer;
+  border-radius: 4px; color: var(--gray-400); font-size: 16px; display: flex;
+  align-items: center; justify-content: center; transition: all var(--transition);
+}
+.modal-close:hover { background: var(--gray-100); color: var(--gray-700); }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-footer {
+  padding: 14px 24px; border-top: 1px solid var(--gray-100);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+/* Context Info Row */
+.ctx-row {
+  display: flex; gap: 32px; padding: 12px 16px; margin-bottom: 20px;
+  background: var(--gray-50); border-radius: var(--radius-md); border: 1px solid var(--gray-100);
+  font-size: 12px;
+}
+.ctx-item { display: flex; flex-direction: column; gap: 2px; }
+.ctx-label { color: var(--gray-400); font-size: 11px; }
+.ctx-value { color: var(--gray-800); font-weight: 500; }
+
+/* Notice */
+.notice {
+  display: flex; gap: 8px; padding: 10px 14px; margin-bottom: 20px;
+  background: var(--gray-25); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  font-size: 12px; color: var(--gray-500); line-height: 1.6;
+}
+.notice strong { color: var(--gray-700); }
+
+/* Product Selection — Row Style */
+.product-select-list { display: flex; flex-direction: column; gap: 1px; margin-bottom: 20px; border: 1px solid var(--gray-200); border-radius: var(--radius-md); overflow: hidden; }
+.product-option {
+  display: flex; align-items: center; padding: 14px 16px; cursor: pointer;
+  background: var(--white); transition: all var(--transition); gap: 14px;
+  border: 2px solid transparent; margin: -1px;
+  position: relative;
+}
+.product-option:hover { background: var(--gray-25); }
+.product-option.selected {
+  background: var(--gray-50);
+  border-color: var(--gray-900);
+  border-radius: var(--radius-md);
+  z-index: 1;
+}
+.product-option.selected .product-radio { border-color: var(--gray-900); background: var(--gray-900); }
+.product-option.selected .product-radio::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+.product-radio {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--gray-300);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: all var(--transition);
+}
+.product-info { flex: 1; min-width: 0; }
+.product-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.product-name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+.product-desc { font-size: 11px; color: var(--gray-500); margin-top: 2px; line-height: 1.5; }
+.product-meta { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+.product-rate { text-align: right; }
+.product-rate .rate-num { font-size: 18px; font-weight: 700; color: var(--gray-800); font-variant-numeric: tabular-nums; }
+.product-rate .rate-label { font-size: 10px; color: var(--gray-400); }
+.cargo-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.cargo-chip { font-size: 11px; padding: 2px 8px; border-radius: 3px; background: var(--gray-200); color: var(--gray-700); font-weight: 500; }
+
+/* ===== Manual Rate Section ===== */
+.manual-section {
+  display: none; padding: 20px; margin-bottom: 20px;
+  border: 1px solid var(--gray-200); border-radius: var(--radius-md); background: var(--gray-50);
+}
+.manual-section.visible { display: block; }
+.manual-section-header {
+  display: flex; align-items: center; gap: 8px; font-size: 12px;
+  font-weight: 600; color: var(--gray-700); margin-bottom: 16px;
+}
+.manual-section-header .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber-500); }
+.field-hint { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+.field-error { border-color: var(--red-500) !important; }
+.error-text { font-size: 11px; color: var(--red-500); margin-top: 3px; display: none; }
+.error-text.visible { display: block; }
+
+/* ===== Premium Preview ===== */
+.premium-bar {
+  display: flex; align-items: center; gap: 16px; padding: 14px 20px;
+  background: var(--gray-50); border-radius: var(--radius-md); border: 1px solid var(--gray-100);
+}
+.premium-bar-label { font-size: 12px; color: var(--gray-500); white-space: nowrap; }
+.premium-bar-calc { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray-600); }
+.premium-bar-calc .sep { color: var(--gray-400); }
+.premium-bar-result { font-size: 20px; font-weight: 700; color: var(--gray-900); margin-left: auto; font-variant-numeric: tabular-nums; }
+.premium-bar-note { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
+
+/* ===== Dropdown ===== */
+.dropdown { position: relative; display: inline-block; }
+.dropdown-menu {
+  display: none; position: absolute; top: 100%; right: 0; background: var(--white);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-md); min-width: 160px;
+  z-index: 50; border: 1px solid var(--gray-200); padding: 4px;
+}
+.dropdown-menu.show { display: block; }
+.dropdown-menu .item {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px;
+  cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+  font-family: inherit; color: var(--gray-700); border-radius: 4px;
+}
+.dropdown-menu .item:hover { background: var(--gray-50); }
+.dropdown-menu .item.danger { color: var(--red-500); }
+.dropdown-menu .item.danger:hover { background: var(--red-50); }
+
+/* Page toggle */
+.page-switch { display: flex; gap: 2px; margin-bottom: 20px; }
+.page-switch-btn {
+  padding: 8px 18px; font-size: 13px; cursor: pointer; border: 1px solid var(--gray-200);
+  background: var(--white); font-family: inherit; color: var(--gray-500);
+  transition: all var(--transition);
+}
+.page-switch-btn:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.page-switch-btn:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.page-switch-btn + .page-switch-btn { margin-left: -1px; }
+.page-switch-btn.active { background: var(--gray-900); border-color: var(--gray-900); color: #fff; position: relative; z-index: 1; }
+
+/* Configuration Description */
+.config-desc-card {
+  background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-md);
+  padding: 20px 24px; margin-top: 16px;
+}
+.config-desc-card h4 { font-size: 13px; font-weight: 600; color: var(--gray-800); margin-bottom: 12px; }
+.config-desc-card ol { padding-left: 18px; font-size: 12px; color: var(--gray-500); line-height: 2.2; }
+.config-desc-card ol li strong { color: var(--gray-700); }
+</style>
+</head>
+<body>
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">I</div>
+    <span>IMS 保险管理</span>
+  </div>
+  <nav class="sidebar-menu">
+    <button class="menu-item"><span class="menu-icon">🏠</span>首页</button>
+    <div class="menu-group-title">系统管理</div>
+    <button class="menu-sub">用户管理</button>
+    <button class="menu-sub">角色管理</button>
+    <button class="menu-sub">字典管理</button>
+    <div class="menu-group-title">基础信息</div>
+    <button class="menu-sub" id="navExchangeRateConfig" onclick="setPage('exchangeRateConfig')">保费汇率配置</button>
+    <button class="menu-sub" id="navRateConfig" onclick="setPage('rateConfig')">保费费率配置</button>
+    <div class="menu-group-title">保单管理</div>
+    <button class="menu-sub active" id="navAppList" onclick="setPage('appList')">投保申请表</button>
+    <div class="menu-group-title">报案理赔</div>
+    <button class="menu-sub">报案理赔管理</button>
+  </nav>
+</aside>
+
+<!-- ==================== MAIN ==================== -->
+<div class="main-area">
+  <header class="header">
+    <div class="header-left">
+      <span class="breadcrumb" id="breadcrumb">首页<span class="sep">/</span>保单管理<span class="sep">/</span><span>投保申请表</span></span>
+    </div>
+    <div class="header-right">
+      <div class="avatar">李</div>
+      <span>李*明（业务经理）</span>
+    </div>
+  </header>
+  <div class="content" id="appContent"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== RATE SELECTION DIALOG ==================== -->
+<div class="modal-overlay" id="rateDialog">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3>选择保险产品与费率</h3>
+      <button class="modal-close" onclick="closeRateDialog()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- 投保单上下文 -->
+      <div class="ctx-row" id="dialogAppContext"></div>
+
+      <!-- 提示 -->
+      <div class="notice">
+        <span>💡</span>
+        <span>以下产品由保险专员在后台统一配置。系统<strong>默认选择"通用"方案</strong>，您可根据实际货物情况自行调整。如选"单独报价"，请提前与保险团队沟通确认。</span>
+      </div>
+
+      <!-- Product Selection List -->
+      <div class="product-select-list" id="productSelectList">
+        <!-- 通用 -->
+        <div class="product-option selected" data-product="general" onclick="selectDialogProduct('general')">
+          <div class="product-radio"></div>
+          <div class="product-info">
+            <div class="product-name-row">
+              <span class="product-name">保险产品-通用</span>
+              <span class="tag tag-blue">默认推荐</span>
+            </div>
+            <div class="cargo-chips">
+              <span class="cargo-chip">全新的电子产品</span>
+              <span class="cargo-chip">电子元器件</span>
+              <span class="cargo-chip">精密仪器</span>
+              <span class="cargo-chip">普通货物</span>
+            </div>
+            <div class="product-desc">适用于常规货物运输场景，覆盖多种主流货物类型，无需单独沟通即可使用。</div>
+          </div>
+          <div class="product-meta">
+            <div class="product-rate">
+              <div class="rate-num">0.04% – 0.045%</div>
+              <div class="rate-label">费率区间</div>
+            </div>
+          </div>
+        </div>
+        <!-- 英特尔专属 -->
+        <div class="product-option" data-product="intel" onclick="selectDialogProduct('intel')">
+          <div class="product-radio"></div>
+          <div class="product-info">
+            <div class="product-name-row">
+              <span class="product-name">保险产品-英特尔专属</span>
+              <span class="tag tag-green">专属优惠</span>
+            </div>
+            <div class="cargo-chips">
+              <span class="cargo-chip">英特尔CPU</span>
+            </div>
+            <div class="product-desc">英特尔供应链专属优惠费率，仅适用于英特尔品牌CPU及相关处理器产品。</div>
+          </div>
+          <div class="product-meta">
+            <div class="product-rate">
+              <div class="rate-num">0.025%</div>
+              <div class="rate-label">固定费率</div>
+            </div>
+          </div>
+        </div>
+        <!-- 单独报价 -->
+        <div class="product-option" data-product="custom" onclick="selectDialogProduct('custom')">
+          <div class="product-radio"></div>
+          <div class="product-info">
+            <div class="product-name-row">
+              <span class="product-name">保险产品-单独报价</span>
+              <span class="tag tag-amber">需提前沟通</span>
+            </div>
+            <div class="cargo-chips">
+              <span class="cargo-chip">特殊货物</span>
+              <span class="cargo-chip">高价值/危险品</span>
+              <span class="cargo-chip">非常规运输</span>
+            </div>
+            <div class="product-desc">特殊情况，单独报价。需提前与保险团队沟通确认费率方案，获得报价后请在下方手工填写。</div>
+          </div>
+          <div class="product-meta">
+            <div class="product-rate">
+              <div class="rate-num" style="color:var(--amber-600);">单独核定</div>
+              <div class="rate-label">沟通后填写</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 单独报价手工填写区 -->
+      <div class="manual-section" id="manualRateSection">
+        <div class="manual-section-header">
+          <span class="dot"></span>
+          <span>单独报价信息 — 手工填写费率并备注沟通情况</span>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">单独报价费率（%）<span class="req">*</span></label>
+            <input class="input" id="manualRateInput" type="text" placeholder="例如：0.035" oninput="onManualInput(event)">
+            <div class="error-text" id="rateErr">请输入有效的费率（大于0的数字）</div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">沟通备注<span class="req">*</span></label>
+          <textarea class="textarea" id="remarkInput" rows="3" placeholder="请说明与保险团队的沟通情况，包括沟通时间、沟通对象、确认的报价方案等。&#10;&#10;示例：2026-07-02 与保险专员王*华（分机 8237）沟通确认，费率核定为 0.035%，报价单号 Q2026-0702-015。" oninput="onManualInput(event)"></textarea>
+          <div class="error-text" id="remarkErr">请填写沟通备注（至少10个字）</div>
+          <div class="field-hint">请提前与保险团队确认报价方案后再填写此区域</div>
+        </div>
+      </div>
+
+      <!-- 保费试算 -->
+      <div class="premium-bar">
+        <span class="premium-bar-label">预计保费</span>
+        <span class="premium-bar-calc" id="premiumCalc"></span>
+        <span class="premium-bar-result" id="premiumResult">—</span>
+      </div>
+      <div class="premium-bar-note">* 保费 = 货运价值 × 汇率 × 费率，币种汇率取自保费汇率配置表（人民币汇率=1）。以上为参考试算，实际保费以保险公司核保结果为准。</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeRateDialog()">取消</button>
+      <button class="btn btn-primary btn-lg" id="confirmRateBtn" onclick="confirmRateSelection()">确认选择</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const mockApplications = [
+  { id:1, businessRefNo:'PVG-AI26060171', goodsNameCN:'升降搬运装置等(详见COMMERCIALINVOICE)', invoiceAmount:56035, currencyName:'美元', estimatedInsuranceAmount:61638.5, insuredCompany:'深圳精智达半导体技术有限公司', approvalStatus:'待发起', applicationType:'新增投保单', insuranceCompany:'中国人保', policyNo:'PYII2026310100000023' },
+  { id:2, businessRefNo:'PAC-INTEL26060002Y', goodsNameCN:'中央处理器', invoiceAmount:37073210, currencyName:'人民币', estimatedInsuranceAmount:37073210, insuredCompany:'英特尔贸易（上海）有限公司', approvalStatus:'审批通过', applicationType:'新增投保单', insuranceCompany:'中国人保', policyNo:'PYDL202631010000002682' },
+  { id:3, businessRefNo:'PAC-JZDA26060003Z', goodsNameCN:'老化测试板', invoiceAmount:1166200, currencyName:'美元', estimatedInsuranceAmount:1282820, insuredCompany:'深圳精智达半导体技术有限公司', approvalStatus:'待审核', applicationType:'新增投保单', insuranceCompany:'中国人保', policyNo:'PYII202631010000002389' },
+  { id:5, businessRefNo:'PAC-TEST26060005Y', goodsNameCN:'电子元器件', invoiceAmount:5200000, currencyName:'人民币', estimatedInsuranceAmount:5720000, insuredCompany:'群福电子科技（上海）有限公司', approvalStatus:'待发起', applicationType:'新增投保单', insuranceCompany:'太平洋保险', policyNo:'' },
+];
+
+const mockProducts = [
+  { id:1, productName:'保险产品-通用', rateMin:0.00040, rateMax:0.00045, rateDisplay:'0.04%–0.045%', rateType:'区间费率', cargoTypes:['全新的电子产品','电子元器件','精密仪器','普通货物'], description:'适用于常规货物运输场景，覆盖多种主流货物类型，无需单独沟通即可使用。', status:'启用', isDefault:true, creator:'陆晓峰', createTime:'2026-01-19 16:07:14' },
+  { id:2, productName:'保险产品-英特尔专属', rateMin:0.00025, rateMax:0.00025, rateDisplay:'0.025%', rateType:'固定费率', cargoTypes:['英特尔CPU'], description:'英特尔供应链专属优惠费率，仅适用于英特尔品牌CPU及相关处理器产品。', status:'启用', isDefault:false, creator:'陆晓峰', createTime:'2026-06-09 10:25:23' },
+  { id:3, productName:'保险产品-单独报价', rateMin:null, rateMax:null, rateDisplay:'单独核定', rateType:'手工填写', cargoTypes:['特殊货物','高价值/危险品','非常规运输'], description:'特殊情况，单独报价。需提前与保险团队沟通确认费率方案。', status:'启用', isDefault:false, creator:'陆晓峰', createTime:'2026-07-01 10:00:00' },
+];
+
+const mockExchangeRates = [
+  { id:1, currency:'韩国圆', rate:0.0044, effectiveDate:'2026-07-01', expiryDate:'2026-07-31', creator:'陆晓峰', createTime:'2026-07-01 09:29:12' },
+  { id:2, currency:'欧元', rate:7.7671, effectiveDate:'2026-07-01', expiryDate:'2026-07-31', creator:'陆晓峰', createTime:'2026-07-01 09:28:33' },
+  { id:3, currency:'日本元', rate:0.042045, effectiveDate:'2026-07-01', expiryDate:'2026-07-31', creator:'陆晓峰', createTime:'2026-07-01 09:28:01' },
+  { id:4, currency:'港币', rate:0.86855, effectiveDate:'2026-07-01', expiryDate:'2026-07-31', creator:'陆晓峰', createTime:'2026-07-01 09:27:29' },
+  { id:5, currency:'美元', rate:6.8109, effectiveDate:'2026-07-01', expiryDate:'2026-07-31', creator:'陆晓峰', createTime:'2026-07-01 09:27:01' },
+  { id:6, currency:'澳门元', rate:0.8432, effectiveDate:'2026-07-01', expiryDate:'2026-07-31', creator:'陆晓峰', createTime:'2026-07-01 09:24:52' },
+  { id:7, currency:'台币', rate:0.2133, effectiveDate:'2026-07-01', expiryDate:'2026-07-31', creator:'陆晓峰', createTime:'2026-07-01 09:23:51' },
+  { id:8, currency:'新加坡元', rate:5.2605, effectiveDate:'2026-07-01', expiryDate:'2026-07-31', creator:'陆晓峰', createTime:'2026-07-01 09:22:24' },
+  { id:9, currency:'英镑', rate:9.0145, effectiveDate:'2026-07-01', expiryDate:'2026-07-31', creator:'陆晓峰', createTime:'2026-07-01 09:21:41' },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentPage = 'appList'; // 'appList' | 'rateConfig' | 'exchangeRateConfig'
+let selectedProduct = 'general';
+let rateDialogAppId = null;
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (type === 'error' ? ' toast-error' : '') + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2200);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function setPage(page) {
+  currentPage = page;
+  var bc = document.getElementById('breadcrumb');
+  document.querySelectorAll('.menu-sub').forEach(function(el) { el.classList.remove('active'); });
+
+  if (page === 'appList') {
+    bc.innerHTML = '首页<span class="sep">/</span>保单管理<span class="sep">/</span><span>投保申请表</span>';
+    document.getElementById('navAppList').classList.add('active');
+  } else if (page === 'rateConfig') {
+    bc.innerHTML = '首页<span class="sep">/</span>基础信息<span class="sep">/</span><span>保费费率配置</span>';
+    document.getElementById('navRateConfig').classList.add('active');
+  } else if (page === 'exchangeRateConfig') {
+    bc.innerHTML = '首页<span class="sep">/</span>基础信息<span class="sep">/</span><span>保费汇率配置</span>';
+    document.getElementById('navExchangeRateConfig').classList.add('active');
+  }
+  renderPage();
+  closeRateDialog();
+}
+
+// ============================================================
+// DROPDOWNS
+// ============================================================
+function toggleDropdown(id) {
+  var menu = document.getElementById(id);
+  var isOpen = menu && menu.classList.contains('show');
+  document.querySelectorAll('.dropdown-menu.show').forEach(function(m) { m.classList.remove('show'); });
+  if (!isOpen && menu) menu.classList.add('show');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-menu.show').forEach(function(m) { m.classList.remove('show'); });
+  }
+});
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderPage() {
+  var content = document.getElementById('appContent');
+  if (currentPage === 'appList') {
+    content.innerHTML = renderAppList();
+  } else if (currentPage === 'rateConfig') {
+    content.innerHTML = renderRateConfig();
+  } else if (currentPage === 'exchangeRateConfig') {
+    content.innerHTML = renderExchangeRateConfig();
+  }
+}
+
+// ============================================================
+// PAGE 1: 投保申请表
+// ============================================================
+function renderAppList() {
+  return `
+  <div class="card">
+    <div class="card-header"><span>投保申请表</span></div>
+    <div class="card-body">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
+        <input class="input" placeholder="业务参考号" style="width:160px">
+        <input class="input" placeholder="投保单号" style="width:160px">
+        <select class="select" style="width:130px"><option value="">审核状态</option><option>待发起</option><option>审批通过</option><option>待审核</option></select>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="btn-group">
+          <button class="btn btn-primary">搜索</button>
+          <button class="btn">重置</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th style="width:50px;text-align:center">#</th>
+            <th style="width:185px">业务参考号</th>
+            <th style="width:100px">申请类型</th>
+            <th style="width:80px">审核状态</th>
+            <th style="width:200px">被保人企业</th>
+            <th style="width:180px">商品名称</th>
+            <th style="width:110px;text-align:right">发票金额</th>
+            <th style="width:120px;text-align:right">保险金额</th>
+            <th style="width:100px">保险公司</th>
+            <th style="width:80px">操作</th>
+          </tr></thead>
+          <tbody>
+            ${mockApplications.map(function(r, i) { return `
+            <tr>
+              <td class="text-center">${i+1}</td>
+              <td><a>${r.businessRefNo}</a></td>
+              <td><span class="tag tag-blue">${r.applicationType}</span></td>
+              <td><span class="tag ${r.approvalStatus==='审批通过'?'tag-green':r.approvalStatus==='待审核'?'tag-amber':'tag-neutral'}">${r.approvalStatus}</span></td>
+              <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${r.insuredCompany}</td>
+              <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${r.goodsNameCN}</td>
+              <td class="text-right">${r.invoiceAmount.toLocaleString()}</td>
+              <td class="text-right">${r.estimatedInsuranceAmount.toLocaleString()}</td>
+              <td>${r.insuranceCompany||'—'}</td>
+              <td style="white-space:nowrap">
+                ${r.approvalStatus==='待发起' ? '<button class="btn btn-link btn-sm">编辑</button>' : ''}
+                <div class="dropdown" style="display:inline-block">
+                  <button class="btn btn-link btn-sm" onclick="toggleDropdown('moreMenu_${r.id}')">更多 ▾</button>
+                  <div class="dropdown-menu" id="moreMenu_${r.id}">${getMoreActions(r)}</div>
+                </div>
+              </td>
+            </tr>`; }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination"><span class="total">共 ${mockApplications.length} 条</span><button class="pg-btn active">1</button></div>
+    </div>
+  </div>`;
+}
+
+function getMoreActions(r) {
+  var html = '';
+  if (r.approvalStatus === '待发起') {
+    html += '<button class="item" onclick="openRateDialog('+r.id+')">💰 保险费率选择</button>';
+    html += '<button class="item">✅ 发起审批</button>';
+    html += '<button class="item danger">🗑️ 删除</button>';
+  }
+  if (r.approvalStatus === '审批通过') {
+    html += '<button class="item">📝 保单信息回填</button>';
+    html += '<button class="item">💳 缴费账单</button>';
+  }
+  return html;
+}
+
+// ============================================================
+// PAGE 2: 保费费率配置 (Redesigned Backend)
+// ============================================================
+function renderRateConfig() {
+  return `
+  <div class="version-bar">
+    <span style="font-weight:600;">优化说明</span> — 费率配置已从"按保险公司维度"升级为"按保险产品维度"。保险专员在此配置产品库，业务人员在投保时自行选择对应产品。
+  </div>
+
+  <!-- 查询区 -->
+  <div class="card">
+    <div class="card-header"><span>查询条件</span></div>
+    <div class="card-body">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">产品名称</label><input class="input" style="width:200px" placeholder="请输入"></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">状态</label><select class="select" style="width:120px"><option value="">全部</option><option>启用</option><option>禁用</option></select></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">货物类型</label><input class="input" style="width:180px" placeholder="请输入"></div>
+        <div class="btn-group" style="padding-bottom:1px">
+          <button class="btn btn-primary">搜索</button>
+          <button class="btn">重置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 表格区 -->
+  <div class="card">
+    <div class="card-header">
+      <span>保费费率配置</span>
+      <div class="btn-group">
+        <button class="btn">批量启用</button>
+        <button class="btn">批量禁用</button>
+        <button class="btn btn-primary" onclick="showToast('新增产品 — 待开发')">+ 新增产品</button>
+      </div>
+    </div>
+    <div class="card-body inset">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th style="width:50px;text-align:center">#</th>
+            <th style="width:180px">产品名称</th>
+            <th style="width:120px">费率区间</th>
+            <th style="width:90px">费率类型</th>
+            <th style="width:260px">适用货物类型</th>
+            <th style="width:80px">状态</th>
+            <th style="width:70px">默认</th>
+            <th style="width:90px">创建人</th>
+            <th style="width:150px">创建时间</th>
+            <th style="width:140px">操作</th>
+          </tr></thead>
+          <tbody>
+            ${mockProducts.map(function(p, i) { return `
+            <tr>
+              <td class="text-center">${i+1}</td>
+              <td><strong>${p.productName}</strong></td>
+              <td><span style="font-weight:600;color:var(--gray-800);">${p.rateDisplay}</span></td>
+              <td><span class="tag tag-blue">${p.rateType}</span></td>
+              <td>
+                <div style="display:flex;flex-wrap:wrap;gap:3px;max-width:260px">
+                  ${p.cargoTypes.map(function(t) { return '<span class="tag tag-neutral">'+t+'</span>'; }).join('')}
+                </div>
+              </td>
+              <td><span style="color:${p.status==='启用'?'var(--green-600)':'var(--red-500)'};font-weight:500;">${p.status}</span></td>
+              <td>${p.isDefault ? '<span class="tag tag-blue">默认</span>' : '<span style="color:var(--gray-400)">—</span>'}</td>
+              <td>${p.creator}</td>
+              <td>${p.createTime}</td>
+              <td style="white-space:nowrap">
+                <button class="btn btn-link btn-sm" onclick="showToast(\'编辑产品 — 待开发\')">编辑</button>
+                <button class="btn btn-link btn-sm" onclick="showToast(\'查看详情 — 待开发\')">详情</button>
+                ${p.status==='启用' ? '<button class="btn btn-link danger btn-sm">禁用</button>' : '<button class="btn btn-link btn-sm">启用</button>'}
+              </td>
+            </tr>`; }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination"><span class="total">共 ${mockProducts.length} 条记录</span><button class="pg-btn active">1</button></div>
+    </div>
+  </div>
+
+  <!-- 配置说明 -->
+  <div class="config-desc-card">
+    <h4>产品配置规则说明</h4>
+    <ol>
+      <li><strong>通用产品</strong> — 面向大多数货物类型，配置费率区间（如 0.04%–0.045%），业务人员选择后系统根据货物类型自动匹配子费率。需设为默认产品。</li>
+      <li><strong>专属产品</strong> — 与特定客户签订协议后的优惠费率，配置固定费率（如 0.025%），限定适用货物类型，通常需上传协议附件。</li>
+      <li><strong>单独报价产品</strong> — 占位产品，不预设费率。业务人员选择后需手工填写单独报价费率及沟通备注。适用于高价值、危险品或非常规运输。</li>
+    </ol>
+    <p style="font-size:11px;color:var(--gray-400);margin-top:10px;">* 产品维度不再区分保险公司，具体保险公司匹配在核保/保单回填环节处理。</p>
+  </div>`;
+}
+
+// ============================================================
+// PAGE 3: 保费汇率配置 (去保险公司化)
+// ============================================================
+function renderExchangeRateConfig() {
+  return `
+  <div class="version-bar">
+    <span style="font-weight:600;">优化说明</span> — 汇率配置已不再区分保险公司，按币种统一管理。业务人员投保时系统自动匹配对应币种汇率。
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span>查询条件</span></div>
+    <div class="card-body">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">币种</label><input class="input" style="width:160px" placeholder="请输入币种"></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">生效日期</label><input class="input" type="date" style="width:160px"></div>
+        <div class="btn-group" style="padding-bottom:1px">
+          <button class="btn btn-primary">搜索</button>
+          <button class="btn">重置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span>保费汇率配置</span>
+      <button class="btn btn-primary" onclick="showToast('新增汇率 — 待开发')">+ 新增汇率</button>
+    </div>
+    <div class="card-body inset">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th style="width:50px;text-align:center">#</th>
+            <th style="width:120px">币种</th>
+            <th style="width:120px">汇率</th>
+            <th style="width:130px">生效日期</th>
+            <th style="width:130px">失效日期</th>
+            <th style="width:90px">创建人</th>
+            <th style="width:160px">创建时间</th>
+            <th style="width:80px">操作</th>
+          </tr></thead>
+          <tbody>
+            ${mockExchangeRates.map(function(r, i) { return `
+            <tr>
+              <td class="text-center">${i+1}</td>
+              <td><strong>${r.currency}</strong></td>
+              <td style="font-weight:600;font-variant-numeric:tabular-nums;">${r.rate.toFixed(6)}</td>
+              <td>${r.effectiveDate}</td>
+              <td>${r.expiryDate}</td>
+              <td>${r.creator}</td>
+              <td>${r.createTime}</td>
+              <td><button class="btn btn-link btn-sm" onclick="showToast('编辑汇率 — 待开发')">编辑</button></td>
+            </tr>`; }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination"><span class="total">共 ${mockExchangeRates.length} 条记录</span><button class="pg-btn active">1</button></div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// ★ RATE SELECTION DIALOG
+// ============================================================
+function getExchangeRate(currencyName) {
+  if (!currencyName || currencyName === '人民币') return 1.0;
+  var rate = mockExchangeRates.find(function(r) { return r.currency === currencyName; });
+  return rate ? rate.rate : 1.0;
+}
+
+function openRateDialog(appId) {
+  rateDialogAppId = appId;
+  selectedProduct = 'general';
+
+  var app = mockApplications.find(function(a) { return a.id === appId; });
+  var exRate = getExchangeRate(app ? app.currencyName : '');
+  document.getElementById('dialogAppContext').innerHTML = app ? `
+    <div class="ctx-item"><span class="ctx-label">业务参考号</span><span class="ctx-value">${app.businessRefNo}</span></div>
+    <div class="ctx-item"><span class="ctx-label">货物名称</span><span class="ctx-value">${app.goodsNameCN}</span></div>
+    <div class="ctx-item"><span class="ctx-label">货运价值</span><span class="ctx-value">${app.invoiceAmount.toLocaleString()} ${app.currencyName}</span></div>
+    <div class="ctx-item"><span class="ctx-label">币种 / 汇率</span><span class="ctx-value">${app.currencyName} · <span style="color:var(--gray-900);font-weight:600;">${exRate.toFixed(4)}</span></span></div>
+  ` : '';
+
+  updateProductCardUI();
+  document.getElementById('manualRateInput').value = '';
+  document.getElementById('remarkInput').value = '';
+  clearManualErrors();
+  updatePremiumPreview();
+  document.getElementById('rateDialog').classList.add('show');
+  document.querySelectorAll('.dropdown-menu.show').forEach(function(m) { m.classList.remove('show'); });
+}
+
+function closeRateDialog() {
+  document.getElementById('rateDialog').classList.remove('show');
+  rateDialogAppId = null;
+}
+
+function selectDialogProduct(productId) {
+  selectedProduct = productId;
+  updateProductCardUI();
+
+  var manualSection = document.getElementById('manualRateSection');
+  if (productId === 'custom') {
+    manualSection.classList.add('visible');
+  } else {
+    manualSection.classList.remove('visible');
+    clearManualErrors();
+  }
+  updatePremiumPreview();
+}
+
+function updateProductCardUI() {
+  document.querySelectorAll('#productSelectList .product-option').forEach(function(card) {
+    card.classList.remove('selected');
+    if (card.dataset.product === selectedProduct) card.classList.add('selected');
+  });
+}
+
+// ============================================================
+// PREMIUM CALCULATION
+// ============================================================
+function updatePremiumPreview() {
+  var app = mockApplications.find(function(a) { return a.id === rateDialogAppId; });
+  var cargoValue = app ? (app.estimatedInsuranceAmount || app.invoiceAmount) : 0;
+  var currencyName = app ? app.currencyName : '人民币';
+  var exRate = getExchangeRate(currencyName);
+  var calcEl = document.getElementById('premiumCalc');
+  var resultEl = document.getElementById('premiumResult');
+
+  var rateDisplay, rateValue, rateValueMax;
+  switch (selectedProduct) {
+    case 'general':
+      rateDisplay = '0.04%–0.045%';
+      rateValue = 0.0004;
+      rateValueMax = 0.00045;
+      break;
+    case 'intel':
+      rateDisplay = '0.025%';
+      rateValue = 0.00025;
+      rateValueMax = null;
+      break;
+    case 'custom':
+      var manualRate = parseFloat(document.getElementById('manualRateInput').value);
+      if (manualRate && manualRate > 0) {
+        rateDisplay = manualRate.toFixed(3) + '%';
+        rateValue = manualRate / 100;
+      } else {
+        rateDisplay = '待填写';
+        rateValue = 0;
+      }
+      rateValueMax = null;
+      break;
+    default:
+      rateDisplay = '—'; rateValue = 0; rateValueMax = null;
+  }
+
+  calcEl.innerHTML = '<span>' + cargoValue.toLocaleString() + ' ' + currencyName + '</span><span class="sep">×</span><span style="font-size:11px;color:var(--gray-500)">汇率 ' + (currencyName === '人民币' ? '1.0000' : exRate.toFixed(4)) + '</span><span class="sep">×</span><span style="font-weight:600;color:var(--gray-900)">' + rateDisplay + '</span><span class="sep">=</span>';
+
+  if (rateValue > 0) {
+    if (rateValueMax) {
+      var premiumMin = cargoValue * exRate * rateValue;
+      var premiumMax = cargoValue * exRate * rateValueMax;
+      resultEl.textContent = '¥' + premiumMin.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' – ¥' + premiumMax.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else {
+      var premium = cargoValue * exRate * rateValue;
+      resultEl.textContent = '¥' + premium.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    resultEl.style.color = 'var(--gray-900)';
+  } else {
+    resultEl.textContent = '—';
+    resultEl.style.color = 'var(--gray-400)';
+  }
+}
+
+function onManualInput(e) {
+  var el = e ? e.target : event.target;
+  el.classList.remove('field-error');
+  var errEl = document.getElementById(el.id.replace('Input','') + 'Err');
+  if (errEl) errEl.classList.remove('visible');
+  if (selectedProduct === 'custom') updatePremiumPreview();
+}
+
+// ============================================================
+// VALIDATION
+// ============================================================
+function clearManualErrors() {
+  ['manualRateInput','remarkInput'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.classList.remove('field-error');
+  });
+  ['rateErr','remarkErr'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.classList.remove('visible');
+  });
+}
+
+function validateManual() {
+  var valid = true;
+  var rate = document.getElementById('manualRateInput').value.trim();
+  var remark = document.getElementById('remarkInput').value.trim();
+
+  if (!rate || isNaN(parseFloat(rate)) || parseFloat(rate) <= 0) {
+    document.getElementById('manualRateInput').classList.add('field-error');
+    document.getElementById('rateErr').classList.add('visible');
+    valid = false;
+  }
+  if (!remark || remark.length < 10) {
+    document.getElementById('remarkInput').classList.add('field-error');
+    document.getElementById('remarkErr').classList.add('visible');
+    document.getElementById('remarkErr').textContent = !remark ? '请填写与保险团队的沟通备注' : '沟通备注内容过短，请详细说明沟通情况（≥10字）';
+    valid = false;
+  }
+  return valid;
+}
+
+// ============================================================
+// CONFIRM
+// ============================================================
+function confirmRateSelection() {
+  if (selectedProduct === 'custom') {
+    if (!validateManual()) {
+      showToast('请完善单独报价信息', 'error');
+      document.getElementById('manualRateSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  var productNames = { general: '保险产品-通用', intel: '保险产品-英特尔专属', custom: '保险产品-单独报价' };
+  var app = mockApplications.find(function(a) { return a.id === rateDialogAppId; });
+  var msg = '已为投保单 ' + (app ? app.businessRefNo : '') + ' 选择「' + productNames[selectedProduct] + '」';
+  if (selectedProduct === 'custom') {
+    msg += '，费率 ' + document.getElementById('manualRateInput').value + '%';
+  }
+  showToast(msg);
+  closeRateDialog();
+}
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeRateDialog();
+  if (document.getElementById('rateDialog').classList.contains('show')) {
+    if (!e.target.closest('input,textarea')) {
+      if (e.key === '1') selectDialogProduct('general');
+      if (e.key === '2') selectDialogProduct('intel');
+      if (e.key === '3') selectDialogProduct('custom');
+    }
+  }
+});
+document.getElementById('rateDialog').addEventListener('click', function(e) {
+  if (e.target === this) closeRateDialog();
+});
+
+// ============================================================
+// INIT
+// ============================================================
+setPage('appList');
+setTimeout(function() {
+  showToast('💡 左侧菜单可切换「投保申请表」与「保费费率配置」两个页面');
+}, 600);
+</script>
+</body>
+</html>

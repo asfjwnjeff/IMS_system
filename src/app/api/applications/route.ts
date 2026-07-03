@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
     const db = await getDb();
     const { searchParams } = request.nextUrl;
     const search = searchParams.get('search') || '';
-    const approvalStatus = searchParams.get('approvalStatus') || '';
-    const applicationType = searchParams.get('applicationType') || '';
-    const viewMode = searchParams.get('viewMode') || 'latest'; // 'latest' | 'all'
+    const workflowStatus = searchParams.get('workflowStatus') || '';
+    const submitTypeDesc = searchParams.get('submitTypeDesc') || '';
+    const viewMode = searchParams.get('viewMode') || 'latest';
 
     let conditions = [];
     if (viewMode === 'latest') {
@@ -22,17 +22,17 @@ export async function GET(request: NextRequest) {
     if (search) {
       conditions.push(
         or(
-          like(insuranceApplications.businessRefNo, `%${search}%`),
-          like(insuranceApplications.customerName, `%${search}%`),
-          like(insuranceApplications.applicantCompany, `%${search}%`)
+          like(insuranceApplications.jobidref, `%${search}%`),
+          like(insuranceApplications.insuredCompanyDesc, `%${search}%`),
+          like(insuranceApplications.policyHolderNameDesc, `%${search}%`)
         )
       );
     }
-    if (approvalStatus) {
-      conditions.push(eq(insuranceApplications.approvalStatus, approvalStatus));
+    if (workflowStatus) {
+      conditions.push(eq(insuranceApplications.workflowStatus, workflowStatus));
     }
-    if (applicationType) {
-      conditions.push(eq(insuranceApplications.applicationType, applicationType));
+    if (submitTypeDesc) {
+      conditions.push(eq(insuranceApplications.submitTypeDesc, submitTypeDesc));
     }
 
     const rows = conditions.length > 0

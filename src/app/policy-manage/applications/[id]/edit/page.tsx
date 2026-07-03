@@ -86,7 +86,7 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
   useEffect(() => {
     if (!app) return;
     setRootValues({
-      businessRefNo: app.businessRefNo,
+      jobidref: app.jobidref,
       insuranceCategory: app.insuranceCategory,
     });
     const sv: SectionValues = {};
@@ -96,8 +96,8 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
     setEditValues(sv);
   }, [app]);
 
-  if (loading) return <div className="max-w-4xl mx-auto py-8"><SkeletonCard /></div>;
-  if (!app) return <div className="max-w-4xl mx-auto py-12 text-center text-tertiary">投保申请未找到</div>;
+  if (loading) return <div className="max-w-6xl mx-auto py-8"><SkeletonCard /></div>;
+  if (!app) return <div className="max-w-6xl mx-auto py-12 text-center text-tertiary">投保申请未找到</div>;
 
   const compareVersion: HistoryVersion | null = versions.length > 0 ? versions[versions.length - 1] : null;
 
@@ -196,7 +196,7 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
         <SectionHead title={section.title} />
         <Card className="bg-muted/30 border border-light">
           <CardContent className="pt-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {section.fields.map((f) => renderEditField(f, sk))}
             </div>
           </CardContent>
@@ -206,11 +206,11 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div className="max-w-6xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => { if (dirty && !confirm('有未保存的修改，确定离开？')) return; router.back(); }}><ArrowLeft className="w-5 h-5" /></Button>
-          <div><h1 className="text-lg font-bold">编辑投保单 — {app.businessRefNo}</h1><p className="text-sm text-secondary">V{app.version}</p></div>
+          <div><h1 className="text-lg font-bold">编辑投保单 — {app.jobidref}</h1></div>
         </div>
         <div className="flex gap-2">
           {compareVersion && (

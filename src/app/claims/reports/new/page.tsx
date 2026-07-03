@@ -13,10 +13,10 @@ import type { ClaimReport, ClaimDetail } from '@/lib/types';
 import { COUNTRIES, PACKAGE_TYPES } from '@/lib/types';
 
 const emptyDetail: ClaimDetail = {
-  applicantDept: '', billNo: '', businessRefNo: '',
+  applicantDept: '', billNo: '', jobidref: '',
   originCountryCode: '', originCountry: '', originProvince: '', originCity: '', originDistrict: '', originAddress: '',
   consigneeName: '', destCountryCode: '', destCountry: '', destProvince: '', destCity: '', destDistrict: '', destAddress: '',
-  goodsName: '', cargoQuantity: 0, packageType2: '', estimatedLossAmount: 0, lossCurrency: '',
+  productNameCn: '', cargoQuantity: 0, packageTypeDesc: '', estimatedLossAmount: 0, lossCurrency: '',
   accidentTime: '', accidentCountryCode: '', accidentCountry: '', accidentProvince: '', accidentCity: '', accidentDistrict: '', accidentAddress: '',
   accidentDescription: '', accidentFiles: [], claimResultDetail: '', claimAmount: 0, claimFiles: [],
 };
@@ -27,13 +27,13 @@ const halfCol = 'col-span-1';
 export default function ClaimAddPage() {
   const router = useRouter();
   const { dispatch } = useApp();
-  const [form, setForm] = useState({ reportNo: '', policyNo: '', insuranceCompany: '中国人保', insuredCompany: '', reportTime: new Date().toISOString().slice(0, 16), applicantName: '', claimDetail: emptyDetail });
+  const [form, setForm] = useState({ reportNo: '', policyNumber: '', insuranceCompanyName: '中国人保', insuredCompanyName: '', reportTime: new Date().toISOString().slice(0, 16), applicantName: '', claimDetail: emptyDetail });
   const [saving, setSaving] = useState(false);
 
   function u(field: keyof ClaimDetail, value: unknown) { setForm({ ...form, claimDetail: { ...form.claimDetail, [field]: value } }); }
 
   async function handleSubmit() {
-    if (!form.claimDetail.goodsName || !form.claimDetail.accidentTime) { toast.error('请填写必填项'); return; }
+    if (!form.claimDetail.productNameCn || !form.claimDetail.accidentTime) { toast.error('请填写必填项'); return; }
     setSaving(true);
     try {
       const res = await fetch('/api/claims', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, reportStatus: '待审批', claimResult: '' }) });
@@ -53,10 +53,10 @@ export default function ClaimAddPage() {
       <Card><CardHeader><SectionHead title="保单信息" /></CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
-            <div className={halfCol}><label className="text-sm">业务参考号</label><Input value={(form.claimDetail as ClaimDetail).businessRefNo || ''} onChange={(e) => u('businessRefNo', e.target.value)} /></div>
+            <div className={halfCol}><label className="text-sm">业务参考号</label><Input value={(form.claimDetail as ClaimDetail).jobidref || ''} onChange={(e) => u('jobidref', e.target.value)} /></div>
             <div className={halfCol}><label className="text-sm">投保申请人部门</label><Input value={(form.claimDetail as ClaimDetail).applicantDept || ''} onChange={(e) => u('applicantDept', e.target.value)} /></div>
-            <div className={halfCol}><label className="text-sm">保单单号</label><Input value={form.policyNo} onChange={(e) => setForm({ ...form, policyNo: e.target.value })} /></div>
-            <div className={halfCol}><label className="text-sm">保险公司名称</label><Input value={form.insuranceCompany} onChange={(e) => setForm({ ...form, insuranceCompany: e.target.value })} /></div>
+            <div className={halfCol}><label className="text-sm">保单单号</label><Input value={form.policyNumber} onChange={(e) => setForm({ ...form, policyNumber: e.target.value })} /></div>
+            <div className={halfCol}><label className="text-sm">保险公司名称</label><Input value={form.insuranceCompanyName} onChange={(e) => setForm({ ...form, insuranceCompanyName: e.target.value })} /></div>
             <div className={halfCol}><label className="text-sm">提运单号</label><Input value={(form.claimDetail as ClaimDetail).billNo || ''} onChange={(e) => u('billNo', e.target.value)} /></div>
           </div>
         </CardContent>
@@ -66,7 +66,7 @@ export default function ClaimAddPage() {
       <Card><CardHeader><SectionHead title="客户信息" /></CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
-            <div className={halfCol}><label className="text-sm">被保人企业名称</label><Input value={form.insuredCompany} onChange={(e) => setForm({ ...form, insuredCompany: e.target.value })} /></div>
+            <div className={halfCol}><label className="text-sm">被保人企业名称</label><Input value={form.insuredCompanyName} onChange={(e) => setForm({ ...form, insuredCompanyName: e.target.value })} /></div>
             <div className={halfCol}><label className="text-sm">起运地国家标识</label><Select value={(form.claimDetail as ClaimDetail).originCountryCode || ''} onValueChange={(v) => u('originCountryCode', v)}><SelectTrigger><SelectValue placeholder="请选择" /></SelectTrigger><SelectContent>{countries.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
             <div className={halfCol}><label className="text-sm">起运地国家</label><Select value={(form.claimDetail as ClaimDetail).originCountry || ''} onValueChange={(v) => u('originCountry', v)}><SelectTrigger><SelectValue placeholder="请选择" /></SelectTrigger><SelectContent>{countries.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
             <div className={halfCol}><label className="text-sm">起运地省</label><Input value={(form.claimDetail as ClaimDetail).originProvince || ''} onChange={(e) => u('originProvince', e.target.value)} /></div>
@@ -88,9 +88,9 @@ export default function ClaimAddPage() {
       <Card><CardHeader><SectionHead title="货物运输信息" /></CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
-            <div className={halfCol}><label className="text-sm">中文商品名称 *</label><Input value={(form.claimDetail as ClaimDetail).goodsName || ''} onChange={(e) => u('goodsName', e.target.value)} /></div>
+            <div className={halfCol}><label className="text-sm">中文商品名称 *</label><Input value={(form.claimDetail as ClaimDetail).productNameCn || ''} onChange={(e) => u('productNameCn', e.target.value)} /></div>
             <div className={halfCol}><label className="text-sm">货物数量</label><Input type="number" value={(form.claimDetail as ClaimDetail).cargoQuantity || ''} onChange={(e) => u('cargoQuantity', Number(e.target.value))} /></div>
-            <div className={halfCol}><label className="text-sm">包装种类</label><Select value={(form.claimDetail as ClaimDetail).packageType2 || ''} onValueChange={(v) => u('packageType2', v)}><SelectTrigger><SelectValue placeholder="由选择关联带出" /></SelectTrigger><SelectContent>{[...PACKAGE_TYPES].map(p=><SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
+            <div className={halfCol}><label className="text-sm">包装种类</label><Select value={(form.claimDetail as ClaimDetail).packageTypeDesc || ''} onValueChange={(v) => u('packageTypeDesc', v)}><SelectTrigger><SelectValue placeholder="由选择关联带出" /></SelectTrigger><SelectContent>{[...PACKAGE_TYPES].map(p=><SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
             <div className={halfCol}><label className="text-sm">预计货损金额</label><Input type="number" step="0.01" value={(form.claimDetail as ClaimDetail).estimatedLossAmount || ''} onChange={(e) => u('estimatedLossAmount', Number(e.target.value))} /></div>
             <div className={halfCol}><label className="text-sm">货损金额币种</label><Select value={(form.claimDetail as ClaimDetail).lossCurrency || ''} onValueChange={(v) => u('lossCurrency', v)}><SelectTrigger><SelectValue placeholder="请选择" /></SelectTrigger><SelectContent><SelectItem value="人民币">人民币</SelectItem><SelectItem value="美元">美元</SelectItem></SelectContent></Select></div>
             <div className={halfCol}><label className="text-sm">具体出险时间 *</label><Input type="datetime-local" value={(form.claimDetail as ClaimDetail).accidentTime || ''} onChange={(e) => u('accidentTime', e.target.value)} /></div>

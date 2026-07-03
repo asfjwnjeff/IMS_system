@@ -20,7 +20,7 @@ const statusTags: Record<string, 'success' | 'warning' | 'secondary' | 'destruct
   '待审核': 'warning', '草稿': 'secondary', '审批中': 'warning',
 };
 
-const statusKeys = ['insurancePolicyStatus', 'insuranceCorrectionStatus', 'approvalStatus', 'documentStatus', 'effectiveStatus'];
+const statusKeys = ['insurancePolicyStatus', 'insuranceCorrectionStatus', 'workflowStatus', 'documentStatus', 'effectiveStatus'];
 const fileKeys = ['insuranceFiles', 'policyFiles', 'correctionFiles'];
 
 function formatVal(v: unknown, key: string): string {
@@ -57,7 +57,7 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
   }
 
   const rec = app as unknown as Record<string, unknown>;
-  const canEdit = app.approvalStatus === '待发起' || app.approvalStatus === '审批拒绝';
+  const canEdit = app.workflowStatus === '待发起' || app.workflowStatus === '审批拒绝';
   const compareVersion: HistoryVersion | null = versions.length > 0 ? versions[versions.length - 1] : null;
 
   const isFieldChanged = (key: string): boolean => {
@@ -140,14 +140,13 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div className="max-w-6xl mx-auto space-y-4">
       {/* 顶栏 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="w-5 h-5" /></Button>
           <div>
-            <h1 className="text-lg font-bold">投保单详情 — {app.businessRefNo}</h1>
-            <p className="text-sm text-secondary">V{app.version} {!app.isLatest && '(历史版本)'}</p>
+            <h1 className="text-lg font-bold">投保单详情 — {app.jobidref}</h1>
           </div>
         </div>
         <div className="flex gap-2">

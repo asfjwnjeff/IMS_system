@@ -8,7 +8,7 @@ function Card({ className, bordered, ...props }: CardProps) {
     <div
       className={cn(
         'rounded-[var(--radius)] border border-[var(--border-light)] bg-[var(--bg-surface)]',
-        'shadow-[var(--card-shadow)]',
+        'shadow-sm',
         bordered && 'overflow-hidden',
         className
       )}

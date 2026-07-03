@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnSettings } from '@/components/ColumnSettings';
+import { BillInvoiceManager } from '@/components/BillInvoiceManager';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -26,106 +27,112 @@ import { SkeletonTable } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { InsuranceApplication } from '@/lib/types';
 
+// 审批状态
+const WORKFLOW_LABELS: Record<string, string> = {
+  'Draft': '草稿', 'WaitStart': '待发起', 'Approving': '待审批',
+  'Approved': '审批通过', 'Reject': '审批拒绝',
+};
+const statusColorMap: Record<string, 'success' | 'warning' | 'secondary' | 'destructive' | 'default'> = {
+  'Approved': 'success', 'Reject': 'destructive', 'Approving': 'warning', 'WaitStart': 'secondary', 'Draft': 'secondary',
+};
+
 // ===== 搜索字段定义 =====
 interface SearchFieldDef { key: string; label: string; type: 'input' | 'select' | 'dateRange'; options?: string[]; width?: number }
 const searchFieldDefs: SearchFieldDef[] = [
-  { key: 'applicationNo', label: '投保单号', type: 'input', width: 150 },
-  { key: 'businessRefNo', label: '业务参考号', type: 'input', width: 150 },
+  { key: 'policyNo', label: '投保单号', type: 'input', width: 150 },
+  { key: 'jobidref', label: '业务参考号', type: 'input', width: 150 },
   { key: 'applicationTime', label: '投保时间', type: 'dateRange', width: 240 },
-  { key: 'approvalStatus', label: '审批状态', type: 'select', options: ['审批通过', '审批拒绝', '审批中', '待发起', '待审核'], width: 130 },
-  { key: 'insurancePolicyStatus', label: '保险公司保单状态', type: 'select', options: ['已承保', '已批改', '待承保'], width: 150 },
-  { key: 'policyNo', label: '保单单号', type: 'input', width: 150 },
-  { key: 'applicantCompany', label: '投保人企业名称', type: 'input', width: 180 },
-  { key: 'insuredCompany', label: '被保人企业名称', type: 'input', width: 180 },
-  { key: 'goodsNameCN', label: '中文商品名称', type: 'input', width: 180 },
-  { key: 'insuranceCompany', label: '保险公司名称', type: 'input', width: 150 },
-  { key: 'dataSource', label: '数据来源', type: 'select', options: ['fms', 'cos'], width: 100 },
+  { key: 'workflowStatus', label: '审批状态', type: 'select', options: Object.keys(WORKFLOW_LABELS), width: 130 },
+  { key: 'insuranceCompanyPolicyStatus', label: '保险公司保单状态', type: 'select', options: ['已承保', '已批改', '待承保'], width: 150 },
+  { key: 'policyNumber', label: '保单单号', type: 'input', width: 150 },
+  { key: 'policyHolderNameDesc', label: '投保人企业名称', type: 'input', width: 180 },
+  { key: 'insuredCompanyName', label: '被保人企业名称', type: 'input', width: 180 },
+  { key: 'productNameCn', label: '中文商品名称', type: 'input', width: 180 },
+  { key: 'insuranceCompanyName', label: '保险公司名称', type: 'input', width: 150 },
+  { key: 'dataSources', label: '数据来源', type: 'select', options: ['fms', 'cos'], width: 100 },
 ];
 
 // ===== 默认搜索字段 =====
 const defaultSearchFields = [
-  { key: 'applicationNo', visible: true, order: 0 },
-  { key: 'businessRefNo', visible: true, order: 1 },
+  { key: 'policyNo', visible: true, order: 0 },
+  { key: 'jobidref', visible: true, order: 1 },
   { key: 'applicationTime', visible: true, order: 2 },
-  { key: 'approvalStatus', visible: false, order: 3 },
-  { key: 'insurancePolicyStatus', visible: false, order: 4 },
-  { key: 'policyNo', visible: false, order: 5 },
-  { key: 'applicantCompany', visible: false, order: 6 },
-  { key: 'insuredCompany', visible: true, order: 7 },
-  { key: 'goodsNameCN', visible: false, order: 8 },
-  { key: 'insuranceCompany', visible: false, order: 9 },
-  { key: 'dataSource', visible: false, order: 10 },
+  { key: 'workflowStatus', visible: false, order: 3 },
+  { key: 'insuranceCompanyPolicyStatus', visible: false, order: 4 },
+  { key: 'policyNumber', visible: false, order: 5 },
+  { key: 'policyHolderNameDesc', visible: false, order: 6 },
+  { key: 'insuredCompanyName', visible: true, order: 7 },
+  { key: 'productNameCn', visible: false, order: 8 },
+  { key: 'insuranceCompanyName', visible: false, order: 9 },
+  { key: 'dataSources', visible: false, order: 10 },
 ];
 
 // ===== 所有表格列 33列 =====
 const allColumns = [
   { key: 'id', title: '序号', width: 50, align: 'center' as const },
-  { key: 'businessRefNo', title: '业务参考号', width: 180, isLink: true },
-  { key: 'applicationType', title: '申请类型', width: 100, isTypeTag: true },
-  { key: 'approvalStatus', title: '审核状态', width: 90, isStatusTag: true },
-  { key: 'documentStatus', title: '文档状态', width: 80 },
-  { key: 'approvalRemark', title: '审批备注', width: 150, ellipsis: true },
-  { key: 'insurancePolicyStatus', title: '保险公司保单状态', width: 120 },
-  { key: 'insuranceCorrectionStatus', title: '保险公司批改状态', width: 120 },
-  { key: 'applicationNo', title: '投保单号', width: 150 },
+  { key: 'jobidref', title: '业务参考号', width: 180, isLink: true },
+  { key: 'submitTypeDesc', title: '申请类型', width: 100, isTypeTag: true },
+  { key: 'workflowStatus', title: '审核状态', width: 90, isStatusTag: true },
+  { key: 'documentStatusDesc', title: '文档状态', width: 80 },
+  { key: 'auditReason', title: '审批备注', width: 150, ellipsis: true },
+  { key: 'insuranceCompanyPolicyStatus', title: '保险公司保单状态', width: 120 },
+  { key: 'insuranceCompanyCorrectionStatus', title: '保险公司批改状态', width: 120 },
+  { key: 'policyNo', title: '投保单号', width: 150 },
   { key: 'applicationTime', title: '投保时间', width: 160 },
-  { key: 'applicantCompany', title: '投保人企业名称', width: 200, ellipsis: true },
-  { key: 'goodsNameCN', title: '中文商品名称', width: 200, ellipsis: true },
-  { key: 'currencyName', title: '币制中文名称', width: 100 },
+  { key: 'policyHolderNameDesc', title: '投保人企业名称', width: 200, ellipsis: true },
+  { key: 'productNameCn', title: '中文商品名称', width: 200, ellipsis: true },
+  { key: 'currencyCodeIdDesc', title: '币制中文名称', width: 100 },
   { key: 'invoiceAmount', title: '发票金额', width: 110, align: 'right' as const, isAmount: true },
   { key: 'estimatedInsuranceAmount', title: '预计保险金额', width: 120, align: 'right' as const, isAmount: true },
-  { key: 'markupRatio', title: '加成比例', width: 140 },
+  { key: 'markupPercentageDesc', title: '加成比例', width: 140 },
   { key: 'estimatedPremium', title: '预计保费', width: 100, align: 'right' as const, isPremium: true },
-  { key: 'actualPremium', title: '实际保费', width: 100, align: 'right' as const, isPremium: true },
+  { key: 'insuranceCompanyPremium', title: '实际保费', width: 100, align: 'right' as const, isPremium: true },
   { key: 'applicantName', title: '投保申请人姓名', width: 110 },
-  { key: 'insuranceCompany', title: '保险公司名称', width: 100 },
+  { key: 'insuranceCompanyName', title: '保险公司名称', width: 100 },
   { key: 'cosOrderStatus', title: 'COS订单状态', width: 100 },
-  { key: 'insuranceCategory', title: '投保类别', width: 90 },
+  { key: 'insuranceCategoryDesc', title: '投保类别', width: 90 },
   { key: 'transitPort', title: '途径港', width: 180, ellipsis: true },
-  { key: 'carriageType', title: '车厢类型', width: 80 },
-  { key: 'packageType', title: '包装种类', width: 200, ellipsis: true },
-  { key: 'quantity', title: '件数', width: 60, align: 'right' as const },
-  { key: 'insuredCompany', title: '被保人企业名称', width: 200, ellipsis: true },
-  { key: 'policyNo', title: '保单单号', width: 200 },
-  { key: 'customerName', title: '客户名称', width: 200, ellipsis: true },
-  { key: 'effectiveStatus', title: '生效状态', width: 80 },
+  { key: 'containerTypeDesc', title: '车厢类型', width: 80 },
+  { key: 'packageTypeDesc', title: '包装种类', width: 200, ellipsis: true },
+  { key: 'packageQuantity', title: '件数', width: 60, align: 'right' as const },
+  { key: 'insuredCompanyName', title: '被保人企业名称', width: 200, ellipsis: true },
+  { key: 'policyNumber', title: '保单单号', width: 200 },
+  { key: 'insuredCompanyDesc', title: '客户名称', width: 200, ellipsis: true },
+  { key: 'effectiveStatusDesc', title: '生效状态', width: 80 },
   { key: 'isBackfill', title: '是否回填', width: 90 },
-  { key: 'dataSource', title: '数据来源', width: 70 },
-  { key: 'correctionActualPremium', title: '批改实际保费', width: 110, align: 'right' as const, isPremium: true },
+  { key: 'dataSources', title: '数据来源', width: 70 },
+  { key: 'correctionOfPremiums', title: '批改实际保费', width: 110, align: 'right' as const, isPremium: true },
 ];
 
 const columnLabelMap: Record<string, string> = Object.fromEntries(allColumns.map((c) => [c.key, c.title]));
 
 const defaultColumnFields = allColumns.map((c, i) => ({ key: c.key, label: c.title, visible: true, order: i }));
 
-// 审批状态颜色
-const statusColorMap: Record<string, 'success' | 'warning' | 'secondary' | 'destructive' | 'default'> = {
-  '审批通过': 'success', '审批拒绝': 'destructive', '审批中': 'warning', '待审核': 'warning', '待发起': 'secondary', '已确认': 'success',
-};
-
 export default function InsuranceApplicationPage() {
   const router = useRouter();
   const { applications, dispatch, loading } = useApp();
   const [searchValues, setSearchValues] = useState<Record<string, string>>({});
-  const [viewMode, setViewMode] = useState<'latest' | 'all'>('latest');
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   // 搜索字段配置
-  const searchConfig = usePersistedConfig('ims_search_fields', defaultSearchFields);
+  const searchConfig = usePersistedConfig('ims_search_fields_v2', defaultSearchFields);
   // 表格列配置
-  const columnConfig = usePersistedConfig('ims_table_columns', defaultColumnFields);
+  const columnConfig = usePersistedConfig('ims_table_columns_v2', defaultColumnFields);
 
   // 回填弹窗
   const [backfillOpen, setBackfillOpen] = useState(false);
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<InsuranceApplication | null>(null);
 
+  // 账单/发票弹窗
+  const [billAppId, setBillAppId] = useState<string | null>(null);
+  const [invoiceAppId, setInvoiceAppId] = useState<string | null>(null);
+
   // 过滤
   const filtered = useMemo(() => {
     return applications.filter((a) => {
-      if (viewMode === 'latest' && !a.isLatest) return false;
       for (const [key, val] of Object.entries(searchValues)) {
         if (!val) continue;
         const v = String(val).toLowerCase();
@@ -134,7 +141,7 @@ export default function InsuranceApplicationPage() {
       }
       return true;
     });
-  }, [applications, viewMode, searchValues]);
+  }, [applications, searchValues]);
 
   const visibleColumns = columnConfig.config.filter((c) => c.visible);
 
@@ -155,32 +162,32 @@ export default function InsuranceApplicationPage() {
     const appAny = app as unknown as Record<string, unknown>;
 
     // 业务参考号 — 可点击
-    if (colKey === 'businessRefNo') {
+    if (colKey === 'jobidref') {
       return (
         <span>
           <button className="text-blue-600 hover:underline text-sm" onClick={() => router.push(`/policy-manage/applications/${app.id}`)}>
-            {app.businessRefNo}
+            {app.jobidref}
           </button>
           {!app.isLatest && <Badge variant="secondary" className="ml-1.5 text-[10px] opacity-60">历史版本</Badge>}
         </span>
       );
     }
     // 申请类型
-    if (colKey === 'applicationType') {
-      return <Badge variant={app.applicationType === '批改申请' ? 'warning' : 'default'}>{app.applicationType || '-'}</Badge>;
+    if (colKey === 'submitTypeDesc') {
+      return <Badge variant={app.submitTypeDesc === '批改申请' ? 'warning' : 'default'}>{app.submitTypeDesc || '-'}</Badge>;
     }
     // 审核状态
-    if (colKey === 'approvalStatus') {
-      return <Badge variant={statusColorMap[app.approvalStatus] || 'secondary'}>{app.approvalStatus || '-'}</Badge>;
+    if (colKey === 'workflowStatus') {
+      return <Badge variant={statusColorMap[app.workflowStatus] || 'secondary'}>{WORKFLOW_LABELS[app.workflowStatus] || app.workflowStatus || '-'}</Badge>;
     }
     // 金额类
     if (colKey === 'invoiceAmount' || colKey === 'estimatedInsuranceAmount') {
       const n = parseFloat(val);
       return <span className="text-sm tabular-nums">{isNaN(n) ? '-' : n.toLocaleString()}</span>;
     }
-    if (colKey === 'estimatedPremium' || colKey === 'actualPremium' || colKey === 'correctionActualPremium') {
+    if (colKey === 'estimatedPremium' || colKey === 'insuranceCompanyPremium' || colKey === 'correctionOfPremiums') {
       const n = parseFloat(val);
-      return <span className="text-sm tabular-nums">{isNaN(n) ? (colKey === 'correctionActualPremium' ? '' : '-') : n.toFixed(2)}</span>;
+      return <span className="text-sm tabular-nums">{isNaN(n) ? (colKey === 'correctionOfPremiums' ? '' : '-') : n.toFixed(2)}</span>;
     }
     // 回填状态
     if (colKey === 'isBackfill') {
@@ -195,8 +202,8 @@ export default function InsuranceApplicationPage() {
   type ActionItems = (ActionItem | 'separator')[];
 
   function getMoreActions(app: InsuranceApplication): ActionItems {
-    const s = app.approvalStatus;
-    const t = app.applicationType;
+    const s = app.workflowStatus;
+    const t = app.submitTypeDesc;
     const isCorrection = t === '批改申请';
     const items: ActionItems = [];
 
@@ -204,27 +211,27 @@ export default function InsuranceApplicationPage() {
       return [{ label: '详情查看', onClick: () => router.push(`/policy-manage/applications/${app.id}`) }];
     }
 
-    if (s === '待发起' || s === '审批拒绝') {
+    if (s === 'WaitStart' || s === 'Reject') {
       items.push({ label: '编辑', onClick: () => router.push(`/policy-manage/applications/${app.id}/edit`) });
     }
-    if (s === '待发起') {
-      items.push({ label: '删除', onClick: () => { if (confirm('确定要删除投保单 ' + app.businessRefNo + ' 吗？')) { fetch('/api/applications?id=' + app.id, { method: 'DELETE' }); dispatch({ type: 'DELETE_APPLICATION', id: app.id }); toast.success('已删除'); } }, danger: true });
+    if (s === 'WaitStart') {
+      items.push({ label: '删除', onClick: () => { if (confirm('确定要删除投保单 ' + app.jobidref + ' 吗？')) { fetch('/api/applications?id=' + app.id, { method: 'DELETE' }); dispatch({ type: 'DELETE_APPLICATION', id: app.id }); toast.success('已删除'); } }, danger: true });
       items.push({ label: '保险费率选择', onClick: () => toast.info('保险费率选择 — 待开发') });
     }
-    if (s === '待发起' || s === '审批拒绝') {
+    if (s === 'WaitStart' || s === 'Reject') {
       items.push({ label: '发起审批', onClick: () => toast.success('已发起审批') });
     }
     if (s === '审批中' || s === '待审核') {
       items.push({ label: '撤销审核', onClick: () => toast.success('已撤销审核，已通知所有审批人') });
     }
-    if (s === '审批通过') {
+    if (s === 'Approved') {
       if (isCorrection) {
         items.push({ label: '批改信息回填', onClick: () => { setCurrentRecord(app); setCorrectionOpen(true); } });
       } else {
         items.push({ label: '保单信息回填', onClick: () => { setCurrentRecord(app); setBackfillOpen(true); } });
       }
-      items.push({ label: '缴费账单', onClick: () => toast.info('缴费账单 — 待开发') });
-      items.push({ label: '发票', onClick: () => toast.info('发票 — 待开发') });
+      items.push({ label: '缴费账单', onClick: () => setBillAppId(app.id) });
+      items.push({ label: '发票', onClick: () => setInvoiceAppId(app.id) });
       if (!isCorrection) items.push({ label: '发起批改', onClick: () => toast.info('发起批改 — 待开发') });
     }
 
@@ -283,13 +290,7 @@ export default function InsuranceApplicationPage() {
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">查询条件</CardTitle>
-            <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
-              <button className={`px-3 py-1 text-xs rounded-md transition-colors ${viewMode === 'latest' ? 'bg-background shadow-sm font-medium' : ''}`} onClick={() => setViewMode('latest')}>当前有效</button>
-              <button className={`px-3 py-1 text-xs rounded-md transition-colors ${viewMode === 'all' ? 'bg-background shadow-sm font-medium' : ''}`} onClick={() => setViewMode('all')}>全部记录</button>
-            </div>
-          </div>
+          <CardTitle className="text-base">查询条件</CardTitle>
         </CardHeader>
         <CardContent>
           {/* 搜索字段行 */}
@@ -387,10 +388,10 @@ export default function InsuranceApplicationPage() {
                         <Button variant="link" size="sm" onClick={() => router.push(`/policy-manage/applications/${app.id}`)}>查看</Button>
                       ) : (
                         <div className="flex items-center gap-0">
-                          {(app.approvalStatus === '待发起' || app.approvalStatus === '审批拒绝') && (
+                          {(app.workflowStatus === 'WaitStart' || app.workflowStatus === 'Reject') && (
                             <Button variant="link" size="sm" onClick={() => router.push(`/policy-manage/applications/${app.id}/edit`)}>编辑</Button>
                           )}
-                          {app.approvalStatus === '待发起' && (
+                          {app.workflowStatus === 'WaitStart' && (
                             <Button variant="link" size="sm" className="text-destructive" onClick={() => { if (confirm('删除？')) { fetch('/api/applications?id=' + app.id, { method: 'DELETE' }); dispatch({ type: 'DELETE_APPLICATION', id: app.id }); toast.success('已删除'); } }}>删除</Button>
                           )}
                           <DropdownMenu>
@@ -448,7 +449,7 @@ export default function InsuranceApplicationPage() {
           <DialogHeader><DialogTitle>保单信息回填</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div><label className="text-sm">保险公司名称 *</label>
-              <Select defaultValue={currentRecord?.backfillInfo?.insuranceCompany || ''}>
+              <Select defaultValue={currentRecord?.backfillInfo?.insuranceCompanyCode || ''}>
                 <SelectTrigger><SelectValue placeholder="请选择" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="中国人保">CO00056870 - 中国人保</SelectItem>
@@ -474,7 +475,7 @@ export default function InsuranceApplicationPage() {
           <DialogHeader><DialogTitle>批改信息回填</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div><label className="text-sm">保险公司批改状态</label>
-              <Select defaultValue={currentRecord?.correctionInfo?.insuranceCorrectionStatus || ''}>
+              <Select defaultValue={currentRecord?.correctionInfo?.insuranceCompanyCorrectionStatus || ''}>
                 <SelectTrigger><SelectValue placeholder="请选择" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="已批改">已批改</SelectItem>
@@ -492,6 +493,26 @@ export default function InsuranceApplicationPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 缴费账单弹窗 */}
+      {billAppId && (
+        <BillInvoiceManager
+          open={!!billAppId}
+          onOpenChange={(open) => { if (!open) setBillAppId(null); }}
+          applicationId={billAppId}
+          mode="bill"
+        />
+      )}
+
+      {/* 发票弹窗 */}
+      {invoiceAppId && (
+        <BillInvoiceManager
+          open={!!invoiceAppId}
+          onOpenChange={(open) => { if (!open) setInvoiceAppId(null); }}
+          applicationId={invoiceAppId}
+          mode="invoice"
+        />
+      )}
     </div>
   );
 }

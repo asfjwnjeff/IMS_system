@@ -27,7 +27,7 @@ export default function ReportClaimsPage() {
 
   const filtered = useMemo(() => claims.filter((c) => {
     if (statusFilter && statusFilter !== 'all' && c.reportStatus !== statusFilter) return false;
-    if (searchNo && !c.reportNo?.includes(searchNo) && !c.policyNo?.includes(searchNo)) return false;
+    if (searchNo && !c.reportNo?.includes(searchNo) && !c.policyNumber?.includes(searchNo)) return false;
     if (dateFrom && c.reportTime < dateFrom) return false;
     if (dateTo && c.reportTime > dateTo) return false;
     return true;
@@ -84,9 +84,9 @@ export default function ReportClaimsPage() {
                   <TableCell><span style={{ color: statusColor[c.reportStatus] || '#333' }}>{c.reportStatus}</span></TableCell>
                   <TableCell>{c.reportTime}</TableCell>
                   <TableCell>{c.applicantName}</TableCell>
-                  <TableCell>{c.policyNo}</TableCell>
-                  <TableCell>{c.insuranceCompany}</TableCell>
-                  <TableCell className="max-w-[220px] truncate">{c.insuredCompany}</TableCell>
+                  <TableCell>{c.policyNumber}</TableCell>
+                  <TableCell>{c.insuranceCompanyName}</TableCell>
+                  <TableCell className="max-w-[220px] truncate">{c.insuredCompanyName}</TableCell>
                   <TableCell>{c.claimResult || '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-0">

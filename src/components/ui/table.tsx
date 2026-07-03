@@ -54,7 +54,8 @@ function TableHead({ className, ...props }: React.ThHTMLAttributes<HTMLTableCell
       className={cn(
         'text-left align-middle font-semibold text-[var(--text-secondary)] bg-[var(--bg-subtle)]',
         'sticky top-0 z-[5]',
-        size === 'sm' ? 'h-8 px-3 text-xs' : 'h-10 px-3 text-xs tracking-wide',
+        size === 'sm' ? 'h-8 px-3 text-[11px]' : 'h-10 px-3 text-xs tracking-wide',
+        'border-b-2 border-[var(--border-light)]',
         '[&:has([role=checkbox])]:pr-0',
         className
       )}
