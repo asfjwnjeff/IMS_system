@@ -62,11 +62,11 @@ export const claimReports = sqliteTable('claim_reports', {
 
 export const exchangeRates = sqliteTable('exchange_rates', {
   id: text('id').primaryKey(),
-  insuranceCompany: text('insurance_company').notNull(),
+  insuranceCompany: text('insurance_company').default(''),
+  currency: text('currency').notNull(),
   exchangeRate: real('exchange_rate').notNull(),
   effectiveDate: text('effective_date'),
   expiryDate: text('expiry_date'),
-  currency: text('currency'),
   creator: text('creator'),
   createTime: text('create_time'),
 });
@@ -75,8 +75,11 @@ export const exchangeRates = sqliteTable('exchange_rates', {
 
 export const insuranceRates = sqliteTable('insurance_rates', {
   id: text('id').primaryKey(),
-  insuranceCompany: text('insurance_company').notNull(),
-  rate: real('rate').notNull(),
+  productName: text('product_name').notNull(),
+  rateMin: real('rate_min').notNull(),
+  rateMax: real('rate_max'),
+  rateType: text('rate_type').default('区间费率'),
+  isDefault: integer('is_default').default(0),
   effectiveDate: text('effective_date'),
   expiryDate: text('expiry_date'),
   cargoType: text('cargo_type'),

@@ -10,9 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HistoryPanel } from '@/components/HistoryPanel';
+import { InsuranceRateSelector } from '@/components/InsuranceRateSelector';
+import type { RateSelectionResult } from '@/components/InsuranceRateSelector';
 import { sections, SECTION_JSON_MAP, type SectionDef, type FieldDef } from '@/lib/field-defs';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, ArrowLeftRight } from 'lucide-react';
+import { ArrowLeft, Save, ArrowLeftRight, Coins } from 'lucide-react';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import type { InsuranceApplication, HistoryVersion } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -61,6 +63,8 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [dictOptions, setDictOptions] = useState<Record<string, string[]>>({});
+  const [rateSelectorOpen, setRateSelectorOpen] = useState(false);
+  const [selectedRateInfo, setSelectedRateInfo] = useState<RateSelectionResult | null>(null);
 
   // 加载历史版本
   useEffect(() => {
@@ -130,6 +134,22 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
 
   const changedCount = compareVersion ? editSections.reduce((c, s) => c + s.fields.filter((f) => isChanged(getSectionKey(f.key), f.key)).length, 0) : 0;
 
+  function handleRateConfirm(result: RateSelectionResult) {
+    setSelectedRateInfo(result);
+    // 更新保险信息字段，确保数字类型安全
+    const sk = 'insuranceInfo';
+    setEditValues((prev) => ({
+      ...prev,
+      [sk]: {
+        ...(prev[sk] || {}),
+        estimatedInsuranceAmount: Number(result.estimatedInsuranceAmount) || 0,
+        estimatedPremium: Number(result.estimatedPremiumMin) || 0,
+      },
+    }));
+    setDirty(true);
+    toast.success(`已选择「${result.productName}」`);
+  }
+
   async function handleSave() {
     setSaving(true);
     try {
@@ -168,6 +188,9 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
       control = <Input type="date" value={value == null ? '' : String(value)} onChange={(e: { target: { value: string } }) => setFieldValue(sk, f.key, e.target.value)} />;
     } else if (f.type === 'textarea') {
       control = <Textarea value={value == null ? '' : String(value)} onChange={(e: { target: { value: string } }) => setFieldValue(sk, f.key, e.target.value)} rows={2} />;
+    } else if (f.type === 'computed') {
+      const num = Number(value);
+      control = <Input value={isNaN(num) ? '' : num.toLocaleString()} readOnly disabled className="bg-muted/50" />;
     } else if (f.type === 'upload') {
       control = <Input placeholder="点击选择附件" readOnly className="cursor-pointer" onClick={() => toast.info('文件上传 — 待实现')} />;
     } else {
@@ -189,16 +212,36 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
     );
   }
 
+  const isInsuranceSection = (title: string) => title === '保险信息';
+
   function renderEditSection(section: SectionDef) {
     const sk = getSectionKey(section.fields[0].key);
+    const showRateBtn = isInsuranceSection(section.title);
     return (
       <div key={section.title} className="mb-6">
-        <SectionHead title={section.title} />
+        <div className="flex items-center justify-between mb-2">
+          <SectionHead title={section.title} />
+          {showRateBtn && (
+            <Button variant="outline" size="sm" onClick={() => setRateSelectorOpen(true)}>
+              <Coins className="w-4 h-4 mr-1" />保险费率选择
+            </Button>
+          )}
+        </div>
         <Card className="bg-muted/30 border border-light">
           <CardContent className="pt-4">
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {section.fields.map((f) => renderEditField(f, sk))}
             </div>
+            {selectedRateInfo && showRateBtn && (
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-md text-sm flex items-center gap-4">
+                <span className="font-medium">已选：{selectedRateInfo.productName}</span>
+                <span className="text-tertiary">费率：{selectedRateInfo.rateDisplay}</span>
+                <span className="text-tertiary">预计保费：{selectedRateInfo.estimatedPremiumMin === selectedRateInfo.estimatedPremiumMax
+                  ? `¥${selectedRateInfo.estimatedPremiumMin.toFixed(2)}`
+                  : `¥${selectedRateInfo.estimatedPremiumMin.toFixed(2)} – ¥${selectedRateInfo.estimatedPremiumMax.toFixed(2)}`}</span>
+                {selectedRateInfo.remark && <span className="text-tertiary truncate max-w-[200px]">备注：{selectedRateInfo.remark}</span>}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -242,6 +285,16 @@ export default function ApplicationEditPage({ params }: { params: Promise<{ id: 
           <Button size="lg" variant="outline" onClick={() => { if (dirty && !confirm('有未保存的修改，确定离开？')) return; router.back(); }}>取消</Button>
         </div>
       </div>
+
+      {/* 保险费率选择弹窗 */}
+      <InsuranceRateSelector
+        open={rateSelectorOpen}
+        onOpenChange={setRateSelectorOpen}
+        invoiceAmount={Number(getFieldValue('insuranceInfo', 'invoiceAmount')) || 0}
+        currency={String(getFieldValue('insuranceInfo', 'currencyCodeIdDesc') || getFieldValue('insuranceInfo', 'currencyName') || '人民币')}
+        markupRatio={String(getFieldValue('insuranceInfo', 'markupPercentageDesc') || '发票金额原值100%')}
+        onConfirm={handleRateConfirm}
+      />
 
       <HistoryPanel applicationId={app.id} />
     </div>

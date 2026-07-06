@@ -33,12 +33,13 @@ export async function autoMigrate() {
     );
 
     CREATE TABLE IF NOT EXISTS exchange_rates (
-      id TEXT PRIMARY KEY, insurance_company TEXT NOT NULL, exchange_rate REAL NOT NULL,
-      effective_date TEXT, expiry_date TEXT, currency TEXT, creator TEXT, create_time TEXT
+      id TEXT PRIMARY KEY, insurance_company TEXT DEFAULT '', currency TEXT NOT NULL, exchange_rate REAL NOT NULL,
+      effective_date TEXT, expiry_date TEXT, creator TEXT, create_time TEXT
     );
 
     CREATE TABLE IF NOT EXISTS insurance_rates (
-      id TEXT PRIMARY KEY, insurance_company TEXT NOT NULL, rate REAL NOT NULL,
+      id TEXT PRIMARY KEY, product_name TEXT NOT NULL, rate_min REAL NOT NULL, rate_max REAL,
+      rate_type TEXT DEFAULT '区间费率', is_default INTEGER DEFAULT 0,
       effective_date TEXT, expiry_date TEXT, cargo_type TEXT, status TEXT DEFAULT '启用',
       cargo_value_rmb REAL, agreement_no TEXT, min_charge REAL, package_type TEXT,
       old_new_type TEXT, remark TEXT, creator TEXT, create_time TEXT
@@ -85,7 +86,27 @@ export async function autoMigrate() {
     );
   `);
 
+  // ==== 迁移 insurance_rates：逐条安全执行，幂等 ====
+  const migrateSqls = [
+    'ALTER TABLE insurance_rates ADD COLUMN product_name TEXT',
+    'ALTER TABLE insurance_rates ADD COLUMN rate_min REAL',
+    'ALTER TABLE insurance_rates ADD COLUMN rate_max REAL',
+    "ALTER TABLE insurance_rates ADD COLUMN rate_type TEXT DEFAULT '区间费率'",
+    'ALTER TABLE insurance_rates ADD COLUMN is_default INTEGER DEFAULT 0',
+    "UPDATE insurance_rates SET product_name = COALESCE(insurance_company, '未命名产品') WHERE (product_name IS NULL OR product_name = '') AND insurance_company IS NOT NULL AND insurance_company != ''",
+    'UPDATE insurance_rates SET rate_min = COALESCE(rate, 0) WHERE rate_min IS NULL AND rate IS NOT NULL',
+    "UPDATE insurance_rates SET rate_type = '固定费率' WHERE rate_type IS NULL AND rate IS NOT NULL",
+    'UPDATE insurance_rates SET is_default = 0 WHERE is_default IS NULL',
+  ];
+  for (const sql of migrateSqls) {
+    try { rawDb.run(sql); } catch (_) { /* 列已存在或无可迁移数据，静默跳过 */ }
+  }
+
   const db = await getDb();
+
+  // ==== 空表自动补种 ====
+  const exrCount = (rawDb.exec('SELECT COUNT(*) as c FROM exchange_rates')[0]?.values?.[0]?.[0] as number) || 0;
+  const insrCount = (rawDb.exec('SELECT COUNT(*) as c FROM insurance_rates')[0]?.values?.[0]?.[0] as number) || 0;
 
   seedExchangeRates(rawDb);
   seedInsuranceRates(rawDb);
@@ -99,30 +120,37 @@ export async function autoMigrate() {
   console.log('[IMS DB] Schema migrated & seed data loaded');
 }
 
-function q(v: unknown): string { return `'${String(v).replace(/'/g, "''")}'`; }
+function q(v: unknown): string {
+  if (v === null || v === undefined) return 'NULL';
+  return `'${String(v).replace(/'/g, "''")}'`;
+}
 
 function seedExchangeRates(db: { run: (s: string) => void }) {
   const rows = [
-    ['exr-1','中国人保',7.2436,'2026-06-01','2026-12-31','美元','管理员','2026-06-01 09:00:00'],
-    ['exr-2','中国人保',0.0521,'2026-06-01','2026-12-31','日元','管理员','2026-06-01 09:00:00'],
-    ['exr-3','中国人保',0.9293,'2026-06-01','2026-12-31','欧元','管理员','2026-06-01 09:00:00'],
-    ['exr-4','中国平安',7.2512,'2026-06-15','2026-12-31','美元','管理员','2026-06-15 10:00:00'],
-    ['exr-5','中国平安',0.0515,'2026-06-15','2026-12-31','日元','管理员','2026-06-15 10:00:00'],
+    ['exr-1','','美元',6.8109,'2026-07-01','2026-07-31','陆晓峰','2026-07-01 09:27:01'],
+    ['exr-2','','欧元',7.7671,'2026-07-01','2026-07-31','陆晓峰','2026-07-01 09:28:33'],
+    ['exr-3','','日本元',0.042045,'2026-07-01','2026-07-31','陆晓峰','2026-07-01 09:28:01'],
+    ['exr-4','','港币',0.86855,'2026-07-01','2026-07-31','陆晓峰','2026-07-01 09:27:29'],
+    ['exr-5','','韩国圆',0.0044,'2026-07-01','2026-07-31','陆晓峰','2026-07-01 09:29:12'],
+    ['exr-6','','澳门元',0.8432,'2026-07-01','2026-07-31','陆晓峰','2026-07-01 09:24:52'],
+    ['exr-7','','台币',0.2133,'2026-07-01','2026-07-31','陆晓峰','2026-07-01 09:23:51'],
+    ['exr-8','','新加坡元',5.2605,'2026-07-01','2026-07-31','陆晓峰','2026-07-01 09:22:24'],
+    ['exr-9','','英镑',9.0145,'2026-07-01','2026-07-31','陆晓峰','2026-07-01 09:21:41'],
   ];
   for (const r of rows) {
-    db.run(`INSERT OR IGNORE INTO exchange_rates VALUES (${r.map(q).join(',')})`);
+    db.run(`INSERT OR IGNORE INTO exchange_rates (id, insurance_company, currency, exchange_rate, effective_date, expiry_date, creator, create_time) VALUES (${r.map(q).join(',')})`);
   }
 }
 
 function seedInsuranceRates(db: { run: (s: string) => void }) {
   const rows = [
-    ['insr-1','中国人保',0.0026,'2026-06-01','2026-12-31','电子产品','启用',1000000,'AGR-2026-001',50,'纸制或纤维板制盒/箱','新货','','管理员','2026-06-01 09:00:00'],
-    ['insr-2','中国人保',0.0035,'2026-06-01','2026-12-31','机械设备','启用',500000,'AGR-2026-002',100,'天然木托','新货','','管理员','2026-06-01 09:00:00'],
-    ['insr-3','中国平安',0.0024,'2026-07-01','2026-12-31','电子产品','启用',800000,'AGR-2026-003',40,'普通集装箱','新货','','管理员','2026-06-15 10:00:00'],
-    ['insr-4','人保财险',0.0018,'2026-06-01','2026-12-31','电子元器件','禁用',200000,'AGR-2026-004',30,'纸制或纤维板制盒/箱','旧货','','管理员','2026-06-01 09:00:00'],
+    ['insr-1','保险产品-通用',0.0004,0.00045,'区间费率',1,'2026-01-19','2026-09-06','全新的电子产品、电子元器件、精密仪器、普通货物','启用',null,'','',null,'','','陆晓峰','2026-01-19 16:07:14'],
+    ['insr-2','保险产品-英特尔专属',0.00025,null,'固定费率',0,'2026-06-09','2026-06-30','英特尔CPU','启用',null,'','',null,'','','陆晓峰','2026-06-09 10:25:23'],
+    ['insr-3','保险产品-单独报价',0,null,'手工填写',0,'2026-07-01','2027-06-30','特殊货物、高价值/危险品、非常规运输','启用',null,'','',null,'','','陆晓峰','2026-07-01 10:00:00'],
+    ['insr-4','精密仪器专用',0.00042,null,'固定费率',0,'2025-09-28','2026-09-27','精密仪器、普通货物','启用',null,'','',null,'','','陆晓峰','2025-11-12 17:01:51'],
   ];
   for (const r of rows) {
-    db.run(`INSERT OR IGNORE INTO insurance_rates VALUES (${r.map(q).join(',')})`);
+    db.run(`INSERT OR IGNORE INTO insurance_rates (id, product_name, rate_min, rate_max, rate_type, is_default, effective_date, expiry_date, cargo_type, status, cargo_value_rmb, agreement_no, min_charge, package_type, old_new_type, remark, creator, create_time) VALUES (${r.map(q).join(',')})`);
   }
 }
 

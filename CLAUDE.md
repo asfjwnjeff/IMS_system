@@ -55,7 +55,7 @@ pnpm lint        # ESLint 代码检查
 ```text
 保险系统/
 ├── CLAUDE.md                              # 本文件
-├── package.json
+├── package.json                           # 依赖 + scripts（端口 5002）
 ├── next.config.ts
 ├── tsconfig.json
 ├── components.json                        # shadcn/ui 配置
@@ -67,63 +67,72 @@ pnpm lint        # ESLint 代码检查
 │   │   ├── layout.tsx                     # 根布局（ThemeProvider > AppProvider > AppLayout）
 │   │   ├── page.tsx                       # 首页 → 重定向到 /policy-manage/applications
 │   │   ├── basic-info/                    # 基础信息模块
-│   │   │   ├── exchange-rates/page.tsx    # 保费汇率配置
-│   │   │   └── insurance-rates/page.tsx   # 保费费率配置
+│   │   │   ├── exchange-rates/page.tsx    # 保费汇率配置（按币种，已去掉保险公司维度）
+│   │   │   └── insurance-rates/page.tsx   # 保费费率配置（按产品维度，三种类型）
 │   │   ├── policy-manage/                 # 保单管理模块
 │   │   │   └── applications/
-│   │   │       ├── page.tsx              # 投保申请列表（33 列 + 列设置 + 导出）
+│   │   │       ├── page.tsx              # 投保申请列表（33 列 + 列设置 + 导出 + 费率选择入口）
 │   │   │       └── [id]/
 │   │   │           ├── page.tsx          # 投保单详情（7 段 + 历史面板 + 版本对比）
-│   │   │           └── edit/page.tsx     # 编辑投保单（7 段表单 + 差异高亮）
+│   │   │           └── edit/page.tsx     # 编辑投保单（5 段表单 + 差异高亮 + 费率选择按钮）
 │   │   ├── claims/                        # 报案理赔模块
 │   │   │   └── reports/
 │   │   │       ├── page.tsx              # 报案列表 + 理赔确认
 │   │   │       ├── new/page.tsx          # 新增报案
 │   │   │       └── [id]/page.tsx         # 报案详情（Descriptions 3 段）
-│   │   └── api/
-│   │       ├── applications/route.ts      # 投保申请 CRUD
+│   │   └── api/                           # 10 个 API 端点
+│   │       ├── applications/route.ts      # 投保申请 CRUD + JSON 列反序列化
 │   │       ├── claims/route.ts            # 报案理赔 CRUD
 │   │       ├── exchange-rates/route.ts    # 汇率配置 CRUD
-│   │       ├── insurance-rates/route.ts   # 费率配置 CRUD + 批量操作
+│   │       ├── insurance-rates/route.ts   # 费率配置 CRUD + 批量启用/禁用
+│   │       ├── bills/route.ts             # 缴费账单 CRUD
+│   │       ├── invoices/route.ts          # 发票 CRUD
 │   │       ├── history/route.ts           # 历史版本/审批/修改日志
-│   │       ├── dict/route.ts              # 下拉选项字典
-│   │       ├── column-configs/route.ts    # 用户列配置
-│   │       └── export/route.ts            # Excel 导出
+│   │       ├── dict/route.ts              # 下拉选项字典（24 种类型）
+│   │       ├── column-configs/route.ts    # 用户列配置持久化
+│   │       └── export/route.ts            # Excel 导出（JSON 列自动展开）
 │   ├── components/
-│   │   ├── layout/AppLayout.tsx           # 全局布局（深色侧栏 + 顶栏面包屑）
-│   │   ├── ThemeProvider.tsx              # 主题 Provider
-│   │   ├── ThemeToggle.tsx                # 主题切换按钮
-│   │   ├── SectionHead.tsx                # 段落标题（蓝色左边框）
-│   │   ├── ColumnSettings.tsx             # 列设置 Popover（勾选/拖拽排序/置顶）
-│   │   ├── HistoryPanel.tsx               # 历史面板（版本/审批/日志 三标签）
-│   │   └── ui/                            # shadcn/ui 组件
+│   │   ├── layout/AppLayout.tsx           # 全局布局（深色侧栏 + 顶栏面包屑 + 主题切换）
+│   │   ├── ThemeProvider.tsx              # 主题 Provider（next-themes）
+│   │   ├── ThemeToggle.tsx                # 明暗主题切换按钮
+│   │   ├── SectionHead.tsx                # 段落标题（蓝色左边框 + 可选操作按钮）
+│   │   ├── ColumnSettings.tsx             # 列设置 Popover（勾选/拖拽排序/置顶/恢复默认）
+│   │   ├── HistoryPanel.tsx               # 历史面板（版本/审批/日志 三标签 + 时间线）
+│   │   ├── BillInvoiceManager.tsx         # 缴费账单/发票双模式管理弹窗
+│   │   ├── InsuranceRateSelector.tsx      # ★ 保险费率选择弹窗（产品列表/汇率换算/保费试算/单独报价）
+│   │   └── ui/                            # shadcn/ui 组件（22 个）
 │   │       ├── button.tsx, card.tsx, input.tsx, badge.tsx
 │   │       ├── table.tsx, select.tsx, textarea.tsx, dialog.tsx
 │   │       ├── alert-dialog.tsx, checkbox.tsx, label.tsx
 │   │       ├── popover.tsx, tabs.tsx, dropdown-menu.tsx
 │   │       ├── form.tsx, separator.tsx, sonner.tsx
-│   │       ├── timeline.tsx               # 自定义 Timeline
-│   │       ├── descriptions.tsx           # CSS Grid 描述列表（替代 Ant Design Descriptions）
-│   │       └── file-upload.tsx            # 文件上传组件
+│   │       ├── skeleton.tsx, empty-state.tsx, descriptions.tsx
+│   │       ├── timeline.tsx, file-upload.tsx, toggle.tsx
 │   ├── db/
-│   │   ├── schema.ts                      # Drizzle ORM Schema（8 个表）
-│   │   ├── index.ts                       # DB 初始化 + CRUD 辅助函数
-│   │   └── seed.ts                        # 建表 + 种子数据 + autoMigrate
+│   │   ├── schema.ts                      # Drizzle ORM Schema（10 个表）
+│   │   ├── index.ts                       # DB 初始化 + buildDbData/parseJsonColumns/saveDb
+│   │   └── seed.ts                        # 建表 + 种子数据 + autoMigrate（幂等迁移）
 │   ├── hooks/
 │   │   └── usePersistedConfig.ts          # 列配置持久化（API + localStorage 双写）
 │   ├── lib/
-│   │   ├── types.ts                       # 全部类型定义 + 下拉选项常量
-│   │   ├── store.tsx                      # Context + useReducer 全局状态
-│   │   ├── navigation.tsx                 # 导航配置（3 模块）
+│   │   ├── types.ts                       # 全部类型定义 + 下拉选项常量 + 省市区三级联动
+│   │   ├── store.tsx                      # Context + useReducer 全局状态（4 个数据集）
+│   │   ├── navigation.tsx                 # 导航配置（3 模块：基础信息/保单管理/报案理赔）
 │   │   ├── utils.ts                       # cn() 工具函数
 │   │   ├── field-defs.ts                  # 共享字段定义（SectionDef[] + JSON 段落映射）
 │   │   └── field-registry.tsx             # 字段渲染器注册表（只读/编辑）
 │   └── types/
 │       └── sql-js.d.ts                    # sql.js 类型声明
 ├── data/
-│   └── ims.db                             # SQLite 数据库文件（不提交 Git）
+│   └── ims.db                             # SQLite 数据库文件（删后重启自动重建）
+├── docs/
+│   ├── prd-insurance-system.md            # 全系统 PRD
+│   └── dev-keypoints.md                   # 开发要点（配置速查 + 常见错误修复记录）
+├── prototype/
+│   └── insurance-rate-selection-v2.html   # 费率选择交互原型
 ├── e2e/                                   # Playwright E2E 测试
-└── docs/                                  # 设计文档
+├── scripts/                               # 脚本目录
+└── public/                                # 静态资源
 ```
 
 ## 路由表

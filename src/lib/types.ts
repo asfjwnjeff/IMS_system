@@ -47,19 +47,20 @@ export interface ChangeLogEntry {
 
 export interface ExchangeRate {
   id: string;
-  insuranceCompany: string;
+  currency: string;
   exchangeRate: number;
   effectiveDate: string;
   expiryDate: string;
-  currency: string;
   creator: string;
   createTime: string;
 }
 
 export interface InsuranceRate {
   id: string;
-  insuranceCompany: string;
-  rate: number;
+  productName: string;
+  rateMin: number;
+  rateMax: number | null;
+  rateType: string;
   effectiveDate: string;
   expiryDate: string;
   cargoType: string;
@@ -72,6 +73,7 @@ export interface InsuranceRate {
   remark: string;
   creator: string;
   createTime: string;
+  isDefault: boolean;
 }
 
 // ==================== 投保申请 - JSON 段落类型 ====================

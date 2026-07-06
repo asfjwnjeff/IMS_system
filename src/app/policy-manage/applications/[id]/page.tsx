@@ -26,6 +26,7 @@ const fileKeys = ['insuranceFiles', 'policyFiles', 'correctionFiles'];
 function formatVal(v: unknown, key: string): string {
   if (v === undefined || v === null || v === '') return '-';
   if (typeof v === 'number') {
+    if (isNaN(v)) return '-';
     if (['estimatedPremium', 'actualPremium', 'correctionActualPremium'].includes(key)) return v.toFixed(2);
     return v.toLocaleString();
   }
@@ -98,7 +99,8 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
       const files = Array.isArray(val) ? val : [];
       display = files.length > 0 ? <span className="text-sm text-blue-600">{files.join(', ')}</span> : <span className="text-tertiary">暂无附件</span>;
     } else if (typeof val === 'number') {
-      if (['estimatedPremium', 'actualPremium', 'correctionActualPremium'].includes(key)) {
+      if (isNaN(val)) { display = <span className="tabular-nums">-</span>; }
+      else if (['estimatedPremium', 'actualPremium', 'correctionActualPremium'].includes(key)) {
         display = <span className="tabular-nums">{val.toFixed(2)}</span>;
       } else {
         display = <span className="tabular-nums">{val.toLocaleString()}</span>;

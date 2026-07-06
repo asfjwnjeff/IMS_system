@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnSettings } from '@/components/ColumnSettings';
 import { BillInvoiceManager } from '@/components/BillInvoiceManager';
+import { InsuranceRateSelector } from '@/components/InsuranceRateSelector';
+import type { RateSelectionResult } from '@/components/InsuranceRateSelector';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -130,6 +132,10 @@ export default function InsuranceApplicationPage() {
   const [billAppId, setBillAppId] = useState<string | null>(null);
   const [invoiceAppId, setInvoiceAppId] = useState<string | null>(null);
 
+  // 费率选择弹窗
+  const [rateSelectorOpen, setRateSelectorOpen] = useState(false);
+  const [rateSelectorApp, setRateSelectorApp] = useState<InsuranceApplication | null>(null);
+
   // 过滤
   const filtered = useMemo(() => {
     return applications.filter((a) => {
@@ -216,7 +222,7 @@ export default function InsuranceApplicationPage() {
     }
     if (s === 'WaitStart') {
       items.push({ label: '删除', onClick: () => { if (confirm('确定要删除投保单 ' + app.jobidref + ' 吗？')) { fetch('/api/applications?id=' + app.id, { method: 'DELETE' }); dispatch({ type: 'DELETE_APPLICATION', id: app.id }); toast.success('已删除'); } }, danger: true });
-      items.push({ label: '保险费率选择', onClick: () => toast.info('保险费率选择 — 待开发') });
+      items.push({ label: '保险费率选择', onClick: () => { setRateSelectorApp(app); setRateSelectorOpen(true); } });
     }
     if (s === 'WaitStart' || s === 'Reject') {
       items.push({ label: '发起审批', onClick: () => toast.success('已发起审批') });
@@ -493,6 +499,21 @@ export default function InsuranceApplicationPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 费率选择弹窗 */}
+      {rateSelectorApp && (
+        <InsuranceRateSelector
+          open={rateSelectorOpen}
+          onOpenChange={setRateSelectorOpen}
+          invoiceAmount={Number((rateSelectorApp.insuranceInfo as unknown as Record<string, unknown> | null)?.invoiceAmount) || 0}
+          currency={String((rateSelectorApp.insuranceInfo as unknown as Record<string, unknown> | null)?.currencyCodeIdDesc || '人民币')}
+          markupRatio={String((rateSelectorApp.insuranceInfo as unknown as Record<string, unknown> | null)?.markupPercentageDesc || '发票金额原值100%')}
+          onConfirm={(result) => {
+            toast.success(`已为投保单 ${rateSelectorApp.jobidref} 选择「${result.productName}」`);
+            setRateSelectorOpen(false);
+          }}
+        />
+      )}
 
       {/* 缴费账单弹窗 */}
       {billAppId && (

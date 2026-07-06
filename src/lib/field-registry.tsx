@@ -36,7 +36,7 @@ export function renderReadonlyField(def: FieldDef, value: unknown): React.ReactN
     }
     case 'number':
       return <span className="text-sm tabular-nums">
-        {typeof value === 'number' ? value.toLocaleString() : String(value)}
+        {typeof value === 'number' ? (isNaN(value) ? '-' : value.toLocaleString()) : String(value)}
       </span>;
     case 'textarea':
       return <span className="text-sm whitespace-pre-wrap">{String(value)}</span>;
